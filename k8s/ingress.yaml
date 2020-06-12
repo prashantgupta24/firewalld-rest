@@ -7,7 +7,7 @@ metadata:
    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
  rules:
- - host: firewalld-sc.ibmcloudpack.com
+ - host: <your-host-name>
    http:
      paths:
      - path: /
@@ -17,4 +17,4 @@ spec:
  tls:
  - secretName: "host1-tls"
    hosts:
-   - firewalld-sc.ibmcloudpack.com
+   - <your-host-name>
