@@ -1,0 +1,4 @@
+.env
+.dockerenv
+*.tmp
+build/
