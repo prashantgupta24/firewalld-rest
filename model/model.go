@@ -24,14 +24,14 @@ func init() {
 		log.Fatal(err)
 	}
 	if len(ipStore) == 0 {
-		ipStore["1.2.3.4"] = &IP{
-			IP:     "1.2.3.4",
-			Domain: "first.com",
-		}
-		ipStore["5.6.7.8"] = &IP{
-			IP:     "5.6.7.8",
-			Domain: "second",
-		}
+		// ipStore["1.2.3.4"] = &IP{
+		// 	IP:     "1.2.3.4",
+		// 	Domain: "first.com",
+		// }
+		// ipStore["5.6.7.8"] = &IP{
+		// 	IP:     "5.6.7.8",
+		// 	Domain: "second",
+		// }
 		db.Register(ipStore)
 		if err := db.Save(filename, ipStore); err != nil {
 			log.Fatal(err)
@@ -63,6 +63,19 @@ func GetAllIPs() ([]*IP, error) {
 		ips = append(ips, ip)
 	}
 	return ips, nil
+}
+
+//CheckIPExists checks if IP is in db
+func CheckIPExists(ipAddr string) (bool, error) {
+	ipStore, err := getIPStoreFromDB()
+	if err != nil {
+		return false, err
+	}
+	_, ok := ipStore[ipAddr]
+	if ok {
+		return true, nil
+	}
+	return false, nil
 }
 
 //AddIP to the db
