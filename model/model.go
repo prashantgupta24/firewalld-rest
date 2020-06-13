@@ -106,6 +106,9 @@ func DeleteIP(ipAddr string) (*IP, error) {
 		return nil, fmt.Errorf("record not found")
 	}
 	delete(ipStore, ipAddr)
+	if err := db.Save(filename, ipStore); err != nil {
+		return nil, fmt.Errorf("error while saving to file : %v", err)
+	}
 	return ip, nil
 
 }
