@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	filename = "./file.tmp"
+	filename = "./db.tmp"
 )
 
 // IP struct that holds json for ip and domain
@@ -24,6 +24,8 @@ func init() {
 		log.Fatal(err)
 	}
 	if len(ipStore) == 0 {
+
+		//in case you want to store some IPs before hand
 		// ipStore["1.2.3.4"] = &IP{
 		// 	IP:     "1.2.3.4",
 		// 	Domain: "first.com",
@@ -32,6 +34,7 @@ func init() {
 		// 	IP:     "5.6.7.8",
 		// 	Domain: "second",
 		// }
+
 		db.Register(ipStore)
 		if err := db.Save(filename, ipStore); err != nil {
 			log.Fatal(err)

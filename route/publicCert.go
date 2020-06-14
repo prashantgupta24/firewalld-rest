@@ -1,3 +1,7 @@
+package route
+
+//publicCertContent required for authentication
+const publicCertContent = `
 -----BEGIN CERTIFICATE-----
 MIIDgjCCAmoCCQDybHZ/ZguMATANBgkqhkiG9w0BAQsFADCBgjELMAkGA1UEBhMC
 VVMxEzARBgNVBAgMCkNhbGlmb3JuaWExETAPBgNVBAcMCFNhbiBKb3NlMQwwCgYD
@@ -19,3 +23,4 @@ CTEqVJk5abC/JCO7HBUBZkCsY0GgxmZDivWcpzxHjl7/U5dSlUEIlbcrmBaVN3fy
 aATm38m1e1h/ZE2gQRmfumA9DMEs3HJ4fLbEnpxJ+dJJM6uu7/jJaz1aPvNaNYby
 sAFLryXHIMWAKDO6o02IhcFpbw0T4GxpTYqsEcj7BrdbFdsUeN0=
 -----END CERTIFICATE-----
+`

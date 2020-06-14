@@ -3,7 +3,6 @@ package route
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -15,8 +14,6 @@ type exception struct {
 	Message string `json:"message"`
 }
 
-const publicCertFile = "public.cert"
-
 //validateMiddleware validates the JWT
 func validateMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -25,14 +22,11 @@ func validateMiddleware(next http.Handler) http.Handler {
 			//fmt.Println("authorizationHeader : ", authorizationHeader)
 			bearerToken := strings.Split(authorizationHeader, " ")
 			if len(bearerToken) == 2 {
-				//get public key
-				publicCert, err := ioutil.ReadFile(publicCertFile)
+				key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicCertContent))
 				if err != nil {
 					json.NewEncoder(w).Encode(exception{Message: err.Error()})
 					return
 				}
-				key, _ := jwt.ParseRSAPublicKeyFromPEM(publicCert)
-
 				token, error := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
 					if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 						return nil, fmt.Errorf("There was an error")

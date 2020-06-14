@@ -81,15 +81,3 @@ func fileExists(filename string) bool {
 	}
 	return !info.IsDir()
 }
-
-// PrintIP in a readable JSON format
-// func PrintIP(v map[string]*model.IP) {
-// 	for _, ip := range v {
-// 		var jsonData []byte
-// 		jsonData, err := json.MarshalIndent(ip, "", " ")
-// 		if err != nil {
-// 			log.Println(err)
-// 		}
-// 		fmt.Println(string(jsonData))
-// 	}
-// }
