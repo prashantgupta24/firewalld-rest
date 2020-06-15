@@ -151,9 +151,9 @@ firewall-cmd --get-active-zones
 
 firewall-cmd --list-all-zones | less
 
-firewall-cmd --zone=internal --list-sources
-firewall-cmd --zone=internal --list-services
-firewall-cmd --zone=internal --list-all
+firewall-cmd --zone=public --list-sources
+firewall-cmd --zone=public --list-services
+firewall-cmd --zone=public --list-all
 
 firewall-cmd --zone=public --add-service=ssh --permanent
 
