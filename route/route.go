@@ -33,31 +33,31 @@ func NewRouter() *mux.Router {
 
 var routesForApp = routes{
 	route{
-		"Index",
+		"Index Page",
 		"GET",
 		"/",
 		Index,
 	},
 	route{
-		"Add",
+		"Add New IP",
 		"POST",
 		"/ip",
 		IPAdd,
 	},
 	route{
-		"ShowAll",
+		"Show all IPs present",
 		"GET",
 		"/ip",
 		ShowAllIPs,
 	},
 	route{
-		"Show",
+		"Show if particular IP is present",
 		"GET",
 		"/ip/{ip}",
 		IPShow,
 	},
 	route{
-		"Delete",
+		"Delete IP",
 		"DELETE",
 		"/ip/{ip}",
 		IPDelete,
