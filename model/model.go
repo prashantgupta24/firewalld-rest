@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	filename = "./db.tmp"
+	filename = "/tmp/firewalld-rest-db.tmp"
 )
 
 // IP struct that holds json for ip and domain
