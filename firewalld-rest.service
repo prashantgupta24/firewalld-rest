@@ -1,0 +1,15 @@
+[Unit]
+Description=Firewalld rest service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/root/rest/firewalld-rest
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
