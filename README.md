@@ -10,6 +10,18 @@ This is a REST service to allow users to dynamically update firewalld rules on a
 
 - [Table of Contents](#table-of-contents)
 - [1. How to install and use](#1-how-to-install-and-use)
+  - [Routes](#routes)
+    - [Index page](#index-page)
+      - [Sample query](#sample-query)
+    - [Add new IP](#add-new-ip)
+      - [Sample query](#sample-query-1)
+    - [Show all IPs](#show-all-ips)
+      - [Sample query](#sample-query-2)
+    - [Show if IP is present](#show-if-ip-is-present)
+      - [Sample query](#sample-query-3)
+    - [Delete IP](#delete-ip)
+      - [Sample query](#sample-query-4)
+  - [IP struct](#ip-struct)
 - [2. Helpful tips/links](#2-helpful-tipslinks)
   - [2.1 Kubernetes endpoint](#21-kubernetes-endpoint)
   - [2.2 Firewalld](#22-firewalld)
@@ -24,6 +36,104 @@ This is a REST service to allow users to dynamically update firewalld rules on a
 <!-- /code_chunk_output -->
 
 ## 1. How to install and use
+
+### Routes
+
+#### Index page
+
+```
+route{
+    "Index Page",
+    "GET",
+    "/",
+}
+```
+
+##### Sample query
+
+```
+curl --location --request GET '<SERVER_IP>:8080' \
+--header 'Authorization: Bearer <signed_jwt>'
+```
+
+#### Add new IP
+
+```
+route{
+    "Add New IP",
+    "POST",
+    "/ip",
+}
+```
+
+##### Sample query
+
+```
+curl --location --request POST '<SERVER_IP>:8080/ip' \
+--header 'Authorization: Bearer <signed_jwt>' \
+--header 'Content-Type: application/json' \
+--data-raw '{"ip":"10.xx.xx.xx","domain":"example.com"}'
+```
+
+#### Show all IPs
+
+```
+route{
+    "Show all IPs present",
+    "GET",
+    "/ip",
+}
+```
+
+##### Sample query
+
+```
+curl --location --request GET '<SERVER_IP>:8080/ip' \
+--header 'Authorization: Bearer <signed_jwt>'
+```
+
+#### Show if IP is present
+
+```
+route{
+    "Show if particular IP is present",
+    "GET",
+    "/ip/{ip}",
+}
+```
+
+##### Sample query
+
+```
+curl --location --request GET '<SERVER_IP>:8080/ip/10.xx.xx.xx' \
+--header 'Authorization: Bearer <signed_jwt>'
+```
+
+#### Delete IP
+
+```
+route{
+    "Delete IP",
+    "DELETE",
+    "/ip/{ip}",
+}
+```
+
+##### Sample query
+
+```
+curl --location --request DELETE '<SERVER_IP>:8080/ip/10.xx.xx.xx' \
+--header 'Authorization: Bearer <signed_jwt>'
+```
+
+### IP struct
+
+```
+type IP struct {
+	IP     string `json:"ip"`
+	Domain string `json:"domain"`
+}
+```
 
 ## 2. Helpful tips/links
 
