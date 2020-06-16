@@ -1,6 +1,6 @@
 # Firewalld-rest
 
-This is a REST service to allow users to dynamically update firewalld rules on a server
+A REST service to allow users to dynamically update firewalld rules on a server.
 
 ## Table of Contents
 
@@ -9,7 +9,13 @@ This is a REST service to allow users to dynamically update firewalld rules on a
 <!-- code_chunk_output -->
 
 - [Table of Contents](#table-of-contents)
-- [1. How to install and use](#1-how-to-install-and-use)
+- [The idea](#the-idea)
+- [2. How to install and use](#2-how-to-install-and-use)
+  - [2.1 Remove SSH from public zone](#21-remove-ssh-from-public-zone)
+  - [2.2 Copy build file over to machine.](#22-copy-build-file-over-to-machine)
+  - [2.3 Configure k8s service and ingress.](#23-configure-k8s-service-and-ingress)
+  - [2.4 Configure linux systemd service](#24-configure-linux-systemd-service)
+  - [2.5 Start and enable systemd service.](#25-start-and-enable-systemd-service)
   - [Routes](#routes)
     - [Index page](#index-page)
       - [Sample query](#sample-query)
@@ -25,9 +31,9 @@ This is a REST service to allow users to dynamically update firewalld rules on a
 - [2. Helpful tips/links](#2-helpful-tipslinks)
   - [2.1 Kubernetes endpoint](#21-kubernetes-endpoint)
   - [2.2 Firewalld](#22-firewalld)
-    - [2.2.1 Commands](#221-commands)
+    - [2.2.1 Useful commands](#221-useful-commands)
     - [2.2.2 Rich rules](#222-rich-rules)
-    - [2.2.3 Documentation](#223-documentation)
+    - [2.2.3 Misc tips](#223-misc-tips)
   - [2.3 JWT in Go](#23-jwt-in-go)
   - [2.4 Golang Exec](#24-golang-exec)
   - [2.5 Systemd](#25-systemd)
@@ -35,7 +41,41 @@ This is a REST service to allow users to dynamically update firewalld rules on a
 
 <!-- /code_chunk_output -->
 
-## 1. How to install and use
+## The idea
+
+The simple idea behind this repo is to have a system running `Firewalld` that does not permit SSH access to anyone by default. The only way to access the system is by communicating with a REST server running on the system, by sending a valid request containing your public IP address.
+
+The REST server validates your request (it checks for a signed JWT, covered later), and if the request is valid, it will add your IP to the firewalld rule for the public zone for SSH service, which gives you SSH access for the machine.
+
+Once you are done using the machine, you can remove your IP using the same REST server, and the server shuts itself off from SSH access from everyone again.
+
+## 2. How to install and use
+
+### 2.1 Remove SSH from public zone
+
+The first step is to remove SSH access from the public zone, which will cease SSH access from everywhere.
+
+```
+firewall-cmd --zone=public --remove-service=ssh --permanent
+```
+
+This removes ssh access for everyone. This is where the application comes into play, and we enable access based on IP.
+
+**Confirm**:
+
+```
+firewall-cmd --zone=public --list-all
+```
+
+### 2.2 Copy build file over to machine.
+
+### 2.3 Configure k8s service and ingress.
+
+See the sample `ingress.yaml` and the `svc.yaml` inside the `k8s` folder to get an idea.
+
+### 2.4 Configure linux systemd service
+
+### 2.5 Start and enable systemd service.
 
 ### Routes
 
@@ -52,7 +92,7 @@ route{
 ##### Sample query
 
 ```
-curl --location --request GET '<SERVER_IP>:8080' \
+curl --location --request GET '<SERVER_IP>:8080/m1' \
 --header 'Authorization: Bearer <signed_jwt>'
 ```
 
@@ -69,7 +109,7 @@ route{
 ##### Sample query
 
 ```
-curl --location --request POST '<SERVER_IP>:8080/ip' \
+curl --location --request POST '<SERVER_IP>:8080/m1/ip' \
 --header 'Authorization: Bearer <signed_jwt>' \
 --header 'Content-Type: application/json' \
 --data-raw '{"ip":"10.xx.xx.xx","domain":"example.com"}'
@@ -88,7 +128,7 @@ route{
 ##### Sample query
 
 ```
-curl --location --request GET '<SERVER_IP>:8080/ip' \
+curl --location --request GET '<SERVER_IP>:8080/m1/ip' \
 --header 'Authorization: Bearer <signed_jwt>'
 ```
 
@@ -105,7 +145,7 @@ route{
 ##### Sample query
 
 ```
-curl --location --request GET '<SERVER_IP>:8080/ip/10.xx.xx.xx' \
+curl --location --request GET '<SERVER_IP>:8080/m1/ip/10.xx.xx.xx' \
 --header 'Authorization: Bearer <signed_jwt>'
 ```
 
@@ -122,7 +162,7 @@ route{
 ##### Sample query
 
 ```
-curl --location --request DELETE '<SERVER_IP>:8080/ip/10.xx.xx.xx' \
+curl --location --request DELETE '<SERVER_IP>:8080/m1/ip/10.xx.xx.xx' \
 --header 'Authorization: Bearer <signed_jwt>'
 ```
 
@@ -143,7 +183,9 @@ type IP struct {
 
 ### 2.2 Firewalld
 
-#### 2.2.1 Commands
+- https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7
+
+#### 2.2.1 Useful commands
 
 ```
 firewall-cmd --get-default-zone
@@ -157,7 +199,7 @@ firewall-cmd --zone=public --list-all
 
 firewall-cmd --zone=public --add-service=ssh --permanent
 
-firewall-cmd --zone=internal --add-source=73.223.28.39/32 --permanent
+firewall-cmd --zone=internal --add-source=70.xx.xx.xxx/32 --permanent
 
 firewall-cmd --reload
 ```
@@ -172,14 +214,14 @@ firewall-cmd --reload
 
 > Reject will reply back with an ICMP packet noting the rejection, while a drop will just silently drop the traffic and do nothing else, so a drop may be preferable in terms of security as a reject response confirms the existence of the system as it is rejecting the request.
 
-#### 2.2.3 Documentation
+#### 2.2.3 Misc tips
 
 > --add-source=IP can be used to add an IP address or range of addresses to a zone. This will mean that if any source traffic enters the systems that matches this, the zone that we have set will be applied to that traffic. In this case we set the ‘testing’ zone to be associated with traffic from the 10.10.10.0/24 range.
 
-`[root@centos7 ~]# firewall-cmd --permanent --zone=testing --add-source=10.10.10.0/24`
+```
+[root@centos7 ~]# firewall-cmd --permanent --zone=testing --add-source=10.10.10.0/24
 success
-
-- https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7
+```
 
 ### 2.3 JWT in Go
 
