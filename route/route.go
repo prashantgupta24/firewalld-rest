@@ -18,17 +18,19 @@ type routes []route
 //NewRouter creates a new mux router for application
 func NewRouter() *mux.Router {
 
-	router := mux.NewRouter().StrictSlash(true)
+	router := mux.NewRouter()
+	subrouter := router.PathPrefix("/m{[0-9]+}").Subrouter().StrictSlash(true)
+
 	router.Use(loggingMiddleware, validateMiddleware)
 	for _, route := range routesForApp {
-		router.
+		subrouter.
 			Methods(route.Method).
 			Path(route.Pattern).
 			Name(route.Name).
 			Handler(route.HandlerFunc)
 	}
 
-	return router
+	return subrouter
 }
 
 var routesForApp = routes{

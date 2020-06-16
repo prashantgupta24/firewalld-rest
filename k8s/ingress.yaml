@@ -10,9 +10,17 @@ spec:
  - host: <your-host-name>
    http:
      paths:
-     - path: /
+     - path: /m1
        backend:
          serviceName: external-rest
+         servicePort: 80
+     - path: /m2
+       backend:
+         serviceName: external-rest-2
+         servicePort: 80
+     - path: /m3
+       backend:
+         serviceName: external-rest-3
          servicePort: 80
  tls:
  - secretName: "host1-tls"
