@@ -2,6 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
  name: firewalld-ingress
+ #Remove annotations block in case you don't want to use SSL using letsenrypt
  annotations:
    kubernetes.io/ingress.class: "nginx"
    cert-manager.io/cluster-issuer: "letsencrypt-prod"
@@ -9,6 +10,7 @@ spec:
  rules:
  - host: <your-host-name>
    http:
+    #different paths for different hosts under the same k8s config
      paths:
      - path: /m1
        backend:
@@ -22,6 +24,7 @@ spec:
        backend:
          serviceName: external-rest-3
          servicePort: 80
+#Remove TLS block in case you don't want to use SSL
  tls:
  - secretName: "host1-tls"
    hosts:

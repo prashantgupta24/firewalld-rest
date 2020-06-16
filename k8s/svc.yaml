@@ -14,11 +14,8 @@ kind: Endpoints
 metadata:
   name: external-rest
 subsets:
-  -
-    addresses:
-      -
-        ip: 10.87.103.96 #private IP of server
+  - addresses:
+      - ip: 10.xx.xx.xx #private IP of server
     ports:
-      -
-        port: 8080
+      - port: 8080
         name: firewalld
