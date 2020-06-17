@@ -38,8 +38,6 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	env := os.Getenv("env")
-	fmt.Println("env : ", env)
-
 	if env != "local" {
 		//example:
 		//firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.10.99.10/32" port protocol="tcp" port="22" accept'
@@ -83,9 +81,6 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 func IPShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ipAddr := vars["ip"]
-	fmt.Println("checking for IP : ", ipAddr)
-	ips, _ := model.GetIPHandler().GetAllIPs()
-	fmt.Println("all IPS : ", ips)
 	ip, err := model.GetIPHandler().GetIP(ipAddr)
 	if err != nil {
 		// No IP found
@@ -124,8 +119,6 @@ func IPDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	env := os.Getenv("env")
-	fmt.Println("env : ", env)
-
 	if env != "local" {
 		//command 1
 		cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--remove-rich-rule=rule family="ipv4" source address="`+ipAddr+`/32" port protocol="tcp" port="22" accept`)

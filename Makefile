@@ -11,6 +11,6 @@ build-mac:
 copy: build-linux
 	scp build/firewalld-rest root@<server>:/root/rest
 clean-db:
-	rm -f db/*.tmp
-test: clean-db
+	rm -f *.tmp
+test:
 	env=local go test -v -failfast -race ./...

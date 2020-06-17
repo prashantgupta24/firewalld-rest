@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/firewalld-rest/db"
 )
@@ -19,19 +20,29 @@ type ipHandler struct {
 
 //GetIPHandler gets handler for IP
 func GetIPHandler() *ipHandler {
-	ipHandler := &ipHandler{
-		filename: "db/firewalld-rest-db.tmp",
+
+	var filename string
+	env := os.Getenv("env")
+	if env == "local" {
+		filename = "./firewalld-rest-db.tmp"
+	} else {
+		filename = "/root/rest/firewalld-rest-db.tmp"
 	}
+
+	ipHandler := &ipHandler{
+		filename: filename,
+	}
+
 	return ipHandler
 }
 
 //GetIPHandlerTest gets handler for test
-func GetIPHandlerTest() *ipHandler {
-	ipHandler := &ipHandler{
-		filename: "./firewalld-rest-db.tmp",
-	}
-	return ipHandler
-}
+// func GetIPHandlerTest() *ipHandler {
+// 	ipHandler := &ipHandler{
+// 		filename: "./firewalld-rest-db.tmp",
+// 	}
+// 	return ipHandler
+// }
 
 func init() {
 
@@ -43,36 +54,20 @@ func init() {
 	if len(ipStore) == 0 {
 
 		//in case you want to store some IPs before hand
-		ipStore["1.2.3.4"] = &IPStruct{
-			IP:     "1.2.3.4",
-			Domain: "first.com",
-		}
-		ipStore["5.6.7.8"] = &IPStruct{
-			IP:     "5.6.7.8",
-			Domain: "second",
-		}
+		// ipStore["1.2.3.4"] = &IPStruct{
+		// 	IP:     "1.2.3.4",
+		// 	Domain: "first.com",
+		// }
+		// ipStore["5.6.7.8"] = &IPStruct{
+		// 	IP:     "5.6.7.8",
+		// 	Domain: "second",
+		// }
 
 		db.Register(ipStore)
 		if err := ipHandler.saveIPStore(ipStore); err != nil {
 			log.Fatal(err)
 		}
 	}
-}
-
-func (ipHandler *ipHandler) loadIPStore() (map[string]*IPStruct, error) {
-	var ipStore = make(map[string]*IPStruct)
-	if err := db.Load(ipHandler.filename, &ipStore); err != nil {
-		return nil, fmt.Errorf("error while loading from file : %v", err)
-	}
-	//fmt.Println("ipstore: ", ipStore)
-	return ipStore, nil
-}
-
-func (ipHandler *ipHandler) saveIPStore(ipStore map[string]*IPStruct) error {
-	if err := db.Save(ipHandler.filename, ipStore); err != nil {
-		return fmt.Errorf("error while saving to file : %v", err)
-	}
-	return nil
 }
 
 //GetIP from the db
@@ -146,5 +141,20 @@ func (ipHandler *ipHandler) DeleteIP(ipAddr string) (*IPStruct, error) {
 		return nil, fmt.Errorf("error while saving to file : %v", err)
 	}
 	return ip, nil
+}
 
+func (ipHandler *ipHandler) loadIPStore() (map[string]*IPStruct, error) {
+	var ipStore = make(map[string]*IPStruct)
+	if err := db.Load(ipHandler.filename, &ipStore); err != nil {
+		return nil, fmt.Errorf("error while loading from file : %v", err)
+	}
+	//fmt.Println("ipstore: ", ipStore)
+	return ipStore, nil
+}
+
+func (ipHandler *ipHandler) saveIPStore(ipStore map[string]*IPStruct) error {
+	if err := db.Save(ipHandler.filename, ipStore); err != nil {
+		return fmt.Errorf("error while saving to file : %v", err)
+	}
+	return nil
 }
