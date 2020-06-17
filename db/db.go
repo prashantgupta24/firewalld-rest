@@ -45,7 +45,7 @@ func Load(path string, v interface{}) error {
 		defer f.Close()
 		return unmarshal(f, v)
 	}
-	log.Printf("File %s not found\n", path)
+	log.Printf("File %s not found, will be created\n", path)
 	return nil
 }
 

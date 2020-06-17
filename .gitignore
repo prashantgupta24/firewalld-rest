@@ -1,4 +1,7 @@
 .env
-.dockerenv
 *.tmp
 build/
+
+# coverage
+*.html
+*.out
