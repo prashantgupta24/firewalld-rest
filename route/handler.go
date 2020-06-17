@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 
 	"github.com/firewalld-rest/model"
@@ -21,12 +22,12 @@ func Index(w http.ResponseWriter, r *http.Request) {
 // IPAdd for the Create action
 // POST /ip
 func IPAdd(w http.ResponseWriter, r *http.Request) {
-	ip := &model.IP{}
+	ip := &model.IPStruct{}
 	if err := populateModelFromHandler(w, r, ip); err != nil {
 		writeErrorResponse(w, http.StatusUnprocessableEntity, "Unprocessible Entity")
 		return
 	}
-	ipExists, err := model.CheckIPExists(ip.IP)
+	ipExists, err := model.GetIPHandler().CheckIPExists(ip.IP)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -36,34 +37,39 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//example:
-	//firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.10.99.10/32" port protocol="tcp" port="22" accept'
+	env := os.Getenv("env")
+	fmt.Println("env : ", env)
 
-	//command 1
-	cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--add-rich-rule=rule family="ipv4" source address="`+ip.IP+`/32" port protocol="tcp" port="22" accept`)
+	if env != "local" {
+		//example:
+		//firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.10.99.10/32" port protocol="tcp" port="22" accept'
 
-	//uncomment for debugging
-	// for _, v := range cmd1.Args {
-	// 	fmt.Println(v)
-	// }\
+		//command 1
+		cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--add-rich-rule=rule family="ipv4" source address="`+ip.IP+`/32" port protocol="tcp" port="22" accept`)
 
-	out1, err := cmd1.CombinedOutput()
-	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd1.String(), err.Error()))
-		return
+		//uncomment for debugging
+		// for _, v := range cmd1.Args {
+		// 	fmt.Println(v)
+		// }\
+
+		out1, err := cmd1.CombinedOutput()
+		if err != nil {
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd1.String(), err.Error()))
+			return
+		}
+		fmt.Printf("combined out:\n%s\n", string(out1))
+
+		//command 2
+		cmd2 := exec.Command("firewall-cmd", "--reload")
+		out2, err := cmd2.CombinedOutput()
+		if err != nil {
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd2.String(), err.Error()))
+			return
+		}
+		fmt.Printf("combined out:\n%s\n", string(out2))
 	}
-	fmt.Printf("combined out:\n%s\n", string(out1))
 
-	//command 2
-	cmd2 := exec.Command("firewall-cmd", "--reload")
-	out2, err := cmd2.CombinedOutput()
-	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd2.String(), err.Error()))
-		return
-	}
-	fmt.Printf("combined out:\n%s\n", string(out2))
-
-	err = model.AddIP(ip)
+	err = model.GetIPHandler().AddIP(ip)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -73,11 +79,14 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 }
 
 // IPShow for the ip Show action
-// GET /ip/:ip
+// GET /ip/{ip}
 func IPShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ipAddr := vars["ip"]
-	ip, err := model.GetIP(ipAddr)
+	fmt.Println("checking for IP : ", ipAddr)
+	ips, _ := model.GetIPHandler().GetAllIPs()
+	fmt.Println("all IPS : ", ips)
+	ip, err := model.GetIPHandler().GetIP(ipAddr)
 	if err != nil {
 		// No IP found
 		writeErrorResponse(w, http.StatusNotFound, err.Error())
@@ -89,7 +98,7 @@ func IPShow(w http.ResponseWriter, r *http.Request) {
 // ShowAllIPs shows all IPs
 // GET /ip
 func ShowAllIPs(w http.ResponseWriter, r *http.Request) {
-	ips, err := model.GetAllIPs()
+	ips, err := model.GetIPHandler().GetAllIPs()
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -98,13 +107,13 @@ func ShowAllIPs(w http.ResponseWriter, r *http.Request) {
 }
 
 // IPDelete for the ip Delete action
-// DELETE /ip/:ip
+// DELETE /ip/{ip}
 func IPDelete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ipAddr := vars["ip"]
 	log.Printf("IP to delete %s\n", ipAddr)
 
-	ipExists, err := model.CheckIPExists(ipAddr)
+	ipExists, err := model.GetIPHandler().CheckIPExists(ipAddr)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -114,25 +123,31 @@ func IPDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//command 1
-	cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--remove-rich-rule=rule family="ipv4" source address="`+ipAddr+`/32" port protocol="tcp" port="22" accept`)
-	out1, err := cmd1.CombinedOutput()
-	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd1.String(), err.Error()))
-		return
-	}
-	fmt.Printf("combined out:\n%s\n", string(out1))
+	env := os.Getenv("env")
+	fmt.Println("env : ", env)
 
-	//command 2
-	cmd2 := exec.Command("firewall-cmd", "--reload")
-	out2, err := cmd2.CombinedOutput()
-	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd2.String(), err.Error()))
-		return
-	}
-	fmt.Printf("combined out:\n%s\n", string(out2))
+	if env != "local" {
+		//command 1
+		cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--remove-rich-rule=rule family="ipv4" source address="`+ipAddr+`/32" port protocol="tcp" port="22" accept`)
+		out1, err := cmd1.CombinedOutput()
+		if err != nil {
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd1.String(), err.Error()))
+			return
+		}
+		fmt.Printf("combined out:\n%s\n", string(out1))
 
-	ip, err := model.DeleteIP(ipAddr)
+		//command 2
+		cmd2 := exec.Command("firewall-cmd", "--reload")
+		out2, err := cmd2.CombinedOutput()
+		if err != nil {
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd2.String(), err.Error()))
+			return
+		}
+		fmt.Printf("combined out:\n%s\n", string(out2))
+
+	}
+
+	ip, err := model.GetIPHandler().DeleteIP(ipAddr)
 	if err != nil {
 		// IP could not be deleted
 		writeErrorResponse(w, http.StatusNotFound, err.Error())

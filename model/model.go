@@ -7,44 +7,77 @@ import (
 	"github.com/firewalld-rest/db"
 )
 
-const (
-	filename = "/root/rest/firewalld-rest-db.tmp"
-)
-
-// IP struct that holds json for ip and domain
-type IP struct {
+// IPStruct that holds json for ip and domain
+type IPStruct struct {
 	IP     string `json:"ip"`
 	Domain string `json:"domain"`
 }
 
+type ipHandler struct {
+	filename string
+}
+
+//GetIPHandler gets handler for IP
+func GetIPHandler() *ipHandler {
+	ipHandler := &ipHandler{
+		filename: "db/firewalld-rest-db.tmp",
+	}
+	return ipHandler
+}
+
+//GetIPHandlerTest gets handler for test
+func GetIPHandlerTest() *ipHandler {
+	ipHandler := &ipHandler{
+		filename: "./firewalld-rest-db.tmp",
+	}
+	return ipHandler
+}
+
 func init() {
 
-	ipStore, err := getIPStoreFromDB()
+	ipHandler := GetIPHandler()
+	ipStore, err := ipHandler.loadIPStore()
 	if err != nil {
 		log.Fatal(err)
 	}
 	if len(ipStore) == 0 {
 
 		//in case you want to store some IPs before hand
-		// ipStore["1.2.3.4"] = &IP{
-		// 	IP:     "1.2.3.4",
-		// 	Domain: "first.com",
-		// }
-		// ipStore["5.6.7.8"] = &IP{
-		// 	IP:     "5.6.7.8",
-		// 	Domain: "second",
-		// }
+		ipStore["1.2.3.4"] = &IPStruct{
+			IP:     "1.2.3.4",
+			Domain: "first.com",
+		}
+		ipStore["5.6.7.8"] = &IPStruct{
+			IP:     "5.6.7.8",
+			Domain: "second",
+		}
 
 		db.Register(ipStore)
-		if err := db.Save(filename, ipStore); err != nil {
+		if err := ipHandler.saveIPStore(ipStore); err != nil {
 			log.Fatal(err)
 		}
 	}
 }
 
+func (ipHandler *ipHandler) loadIPStore() (map[string]*IPStruct, error) {
+	var ipStore = make(map[string]*IPStruct)
+	if err := db.Load(ipHandler.filename, &ipStore); err != nil {
+		return nil, fmt.Errorf("error while loading from file : %v", err)
+	}
+	//fmt.Println("ipstore: ", ipStore)
+	return ipStore, nil
+}
+
+func (ipHandler *ipHandler) saveIPStore(ipStore map[string]*IPStruct) error {
+	if err := db.Save(ipHandler.filename, ipStore); err != nil {
+		return fmt.Errorf("error while saving to file : %v", err)
+	}
+	return nil
+}
+
 //GetIP from the db
-func GetIP(ipAddr string) (*IP, error) {
-	ipStore, err := getIPStoreFromDB()
+func (ipHandler *ipHandler) GetIP(ipAddr string) (*IPStruct, error) {
+	ipStore, err := ipHandler.loadIPStore()
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +89,9 @@ func GetIP(ipAddr string) (*IP, error) {
 }
 
 //GetAllIPs from the db
-func GetAllIPs() ([]*IP, error) {
-	ips := []*IP{}
-	ipStore, err := getIPStoreFromDB()
+func (ipHandler *ipHandler) GetAllIPs() ([]*IPStruct, error) {
+	ips := []*IPStruct{}
+	ipStore, err := ipHandler.loadIPStore()
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +102,8 @@ func GetAllIPs() ([]*IP, error) {
 }
 
 //CheckIPExists checks if IP is in db
-func CheckIPExists(ipAddr string) (bool, error) {
-	ipStore, err := getIPStoreFromDB()
+func (ipHandler *ipHandler) CheckIPExists(ipAddr string) (bool, error) {
+	ipStore, err := ipHandler.loadIPStore()
 	if err != nil {
 		return false, err
 	}
@@ -82,8 +115,8 @@ func CheckIPExists(ipAddr string) (bool, error) {
 }
 
 //AddIP to the db
-func AddIP(ip *IP) error {
-	ipStore, err := getIPStoreFromDB()
+func (ipHandler *ipHandler) AddIP(ip *IPStruct) error {
+	ipStore, err := ipHandler.loadIPStore()
 	if err != nil {
 		return err
 	}
@@ -92,15 +125,15 @@ func AddIP(ip *IP) error {
 		return fmt.Errorf("ip already exists")
 	}
 	ipStore[ip.IP] = ip
-	if err := db.Save(filename, ipStore); err != nil {
+	if err := ipHandler.saveIPStore(ipStore); err != nil {
 		return fmt.Errorf("error while saving to file : %v", err)
 	}
 	return nil
 }
 
 //DeleteIP from the db
-func DeleteIP(ipAddr string) (*IP, error) {
-	ipStore, err := getIPStoreFromDB()
+func (ipHandler *ipHandler) DeleteIP(ipAddr string) (*IPStruct, error) {
+	ipStore, err := ipHandler.loadIPStore()
 	if err != nil {
 		return nil, err
 	}
@@ -109,18 +142,9 @@ func DeleteIP(ipAddr string) (*IP, error) {
 		return nil, fmt.Errorf("record not found")
 	}
 	delete(ipStore, ipAddr)
-	if err := db.Save(filename, ipStore); err != nil {
+	if err := ipHandler.saveIPStore(ipStore); err != nil {
 		return nil, fmt.Errorf("error while saving to file : %v", err)
 	}
 	return ip, nil
 
-}
-
-func getIPStoreFromDB() (map[string]*IP, error) {
-	var ipStore = make(map[string]*IP)
-	if err := db.Load(filename, &ipStore); err != nil {
-		return nil, fmt.Errorf("error while loading from file : %v", err)
-	}
-	//fmt.Println("ipstore: ", ipStore)
-	return ipStore, nil
 }
