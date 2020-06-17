@@ -33,7 +33,7 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if ipExists {
-		writeErrorResponse(w, http.StatusInternalServerError, "ip already exists")
+		writeErrorResponse(w, http.StatusBadRequest, "ip already exists")
 		return
 	}
 
@@ -114,7 +114,7 @@ func IPDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !ipExists {
-		writeErrorResponse(w, http.StatusInternalServerError, "ip does not exist")
+		writeErrorResponse(w, http.StatusNotFound, "ip does not exist")
 		return
 	}
 

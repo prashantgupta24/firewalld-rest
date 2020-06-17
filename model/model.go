@@ -36,14 +36,6 @@ func GetIPHandler() *ipHandler {
 	return ipHandler
 }
 
-//GetIPHandlerTest gets handler for test
-// func GetIPHandlerTest() *ipHandler {
-// 	ipHandler := &ipHandler{
-// 		filename: "./firewalld-rest-db.tmp",
-// 	}
-// 	return ipHandler
-// }
-
 func init() {
 
 	ipHandler := GetIPHandler()
