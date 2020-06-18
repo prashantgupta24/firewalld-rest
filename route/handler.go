@@ -10,7 +10,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/firewalld-rest/model"
+	"github.com/firewalld-rest/ip"
 	"github.com/gorilla/mux"
 )
 
@@ -22,12 +22,12 @@ func Index(w http.ResponseWriter, r *http.Request) {
 // IPAdd for the Create action
 // POST /ip
 func IPAdd(w http.ResponseWriter, r *http.Request) {
-	ip := &model.IPStruct{}
-	if err := populateModelFromHandler(w, r, ip); err != nil {
+	ipInstance := &ip.Instance{}
+	if err := populateModelFromHandler(w, r, ipInstance); err != nil {
 		writeErrorResponse(w, http.StatusUnprocessableEntity, "Unprocessible Entity")
 		return
 	}
-	ipExists, err := model.GetIPHandler().CheckIPExists(ip.IP)
+	ipExists, err := ip.GetHandler().CheckIPExists(ipInstance.IP)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -43,7 +43,7 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 		//firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.10.99.10/32" port protocol="tcp" port="22" accept'
 
 		//command 1
-		cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--add-rich-rule=rule family="ipv4" source address="`+ip.IP+`/32" port protocol="tcp" port="22" accept`)
+		cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--add-rich-rule=rule family="ipv4" source address="`+ipInstance.IP+`/32" port protocol="tcp" port="22" accept`)
 
 		//uncomment for debugging
 		// for _, v := range cmd1.Args {
@@ -67,13 +67,13 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("combined out:\n%s\n", string(out2))
 	}
 
-	err = model.GetIPHandler().AddIP(ip)
+	err = ip.GetHandler().AddIP(ipInstance)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	writeOKResponse(w, ip)
+	writeOKResponse(w, ipInstance)
 }
 
 // IPShow for the ip Show action
@@ -81,7 +81,7 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 func IPShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ipAddr := vars["ip"]
-	ip, err := model.GetIPHandler().GetIP(ipAddr)
+	ip, err := ip.GetHandler().GetIP(ipAddr)
 	if err != nil {
 		// No IP found
 		writeErrorResponse(w, http.StatusNotFound, err.Error())
@@ -93,7 +93,7 @@ func IPShow(w http.ResponseWriter, r *http.Request) {
 // ShowAllIPs shows all IPs
 // GET /ip
 func ShowAllIPs(w http.ResponseWriter, r *http.Request) {
-	ips, err := model.GetIPHandler().GetAllIPs()
+	ips, err := ip.GetHandler().GetAllIPs()
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -108,7 +108,7 @@ func IPDelete(w http.ResponseWriter, r *http.Request) {
 	ipAddr := vars["ip"]
 	log.Printf("IP to delete %s\n", ipAddr)
 
-	ipExists, err := model.GetIPHandler().CheckIPExists(ipAddr)
+	ipExists, err := ip.GetHandler().CheckIPExists(ipAddr)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -140,7 +140,7 @@ func IPDelete(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	ip, err := model.GetIPHandler().DeleteIP(ipAddr)
+	ip, err := ip.GetHandler().DeleteIP(ipAddr)
 	if err != nil {
 		// IP could not be deleted
 		writeErrorResponse(w, http.StatusNotFound, err.Error())
@@ -167,8 +167,8 @@ func writeErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 		Encode(&JSONErrorResponse{Error: &APIError{Status: errorCode, Title: errorMsg}})
 }
 
-//Populates a model from the params in the Handler
-func populateModelFromHandler(w http.ResponseWriter, r *http.Request, model interface{}) error {
+//Populates a ip from the params in the Handler
+func populateModelFromHandler(w http.ResponseWriter, r *http.Request, ip interface{}) error {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		return err
@@ -177,7 +177,7 @@ func populateModelFromHandler(w http.ResponseWriter, r *http.Request, model inte
 		return err
 	}
 	log.Printf("Response body : %s\n", body)
-	if err := json.Unmarshal(body, model); err != nil {
+	if err := json.Unmarshal(body, ip); err != nil {
 		return err
 	}
 	return nil
