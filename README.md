@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/prashantgupta24/firewalld-rest)](https://goreportcard.com/report/github.com/prashantgupta24/firewalld-rest)
+
 # Firewalld-rest
 
 A REST service to allow users to dynamically update firewalld rules on a server.
@@ -19,19 +21,25 @@ Once you are done using the machine, you can remove your IP using the same REST 
 - [What it does](#what-it-does)
 - [Table of Contents](#table-of-contents)
 - [Pre-requisites](#pre-requisites)
-- [How to install and use](#how-to-install-and-use)
-  - [Exposing the REST server](#exposing-the-rest-server)
-  - [Remove SSH from public zone](#remove-ssh-from-public-zone)
+- [About the application](#about-the-application)
+  - [Authorization](#authorization)
+  - [DB](#db)
+  - [Main functions](#main-functions)
+  - [Tests](#tests)
+- [How to install and use on server](#how-to-install-and-use-on-server)
+  - [Local changes required](#local-changes-required)
+  - [Build the application](#build-the-application)
   - [Copy build file over to machine.](#copy-build-file-over-to-machine)
-  - [Configure k8s service and ingress.](#configure-k8s-service-and-ingress)
+  - [Remove SSH from public firewalld zone](#remove-ssh-from-public-firewalld-zone)
+  - [Expose the REST server](#expose-the-rest-server)
   - [Configure linux systemd service](#configure-linux-systemd-service)
   - [Start and enable systemd service.](#start-and-enable-systemd-service)
-  - [Routes](#routes)
+  - [Interacting with the REST server](#interacting-with-the-rest-server)
     - [Index page](#index-page)
       - [Sample query](#sample-query)
-    - [Add new IP](#add-new-ip)
-      - [Sample query](#sample-query-1)
     - [Show all IPs](#show-all-ips)
+      - [Sample query](#sample-query-1)
+    - [Add new IP](#add-new-ip)
       - [Sample query](#sample-query-2)
     - [Show if IP is present](#show-if-ip-is-present)
       - [Sample query](#sample-query-3)
@@ -59,30 +67,27 @@ This repo assumes you have:
 1. `root` access to the machine. (without `root` access, the application will not be able to run the `firewall-cmd` commands needed to add the rule for SSH access)
 1. Kubernetes running on the system (so that the REST server can be exposed outside)
 
-## How to install and use
+## About the application
 
-### Exposing the REST server
+### Authorization
 
-The REST server can be exposed in a number of different ways, I have 2 examples on how it can be exposed:
+### DB
 
-1. Using a `NodePort` kubernetes service (this does not use `ingress`).
-2. Using `ingress` along with a kubernetes service.
+### Main functions
 
-### Remove SSH from public zone
+### Tests
 
-The first step is to remove SSH access from the public zone, which will cease SSH access from everywhere.
+## How to install and use on server
 
-```
-firewall-cmd --zone=public --remove-service=ssh --permanent
-```
+### Local changes required
 
-This removes ssh access for everyone. This is where the application comes into play, and we enable access based on IP.
+1. Make sure you have updated the [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own public cert for which you have the private key. See the section for [generating public/private key](#commands-for-generating-publicprivate-key)
 
-**Confirm**:
+1. Make sure you update the path to where you want to keep your binary on the server. This repo assumes you have kept in under `/root/rest`. If **not**, make sure to change the [Linux systemd service](#configure-linux-systemd-service).
 
-```
-firewall-cmd --zone=public --list-all
-```
+### Build the application
+
+`make build-linux` should create a binary under `build` directory, called `firewalld-rest`. It should contain everything required to run the application on a linux based server.
 
 ### Copy build file over to machine.
 
@@ -92,17 +97,60 @@ scp build/firewalld-rest root@<server>:/root/rest
 
 This assumes you have `root` access, and you are putting the build in the `/root/rest` folder. Without `root` access, the application will not be able to run the `firewall-cmd` commands that it needs to run to add the IP address to the firewall rules.
 
-_Note_: if you want to change the directory where you want to keep the binary, then make sure you edit the `firewalld-rest.service` file, as the linux systemd service expects the above location when running the binary.
+_Note_: if you want to change the directory where you want to keep the binary, then make sure you edit the `firewalld-rest.service` file, as the linux systemd service expects the `/root/rest` location when running the binary.
 
-### Configure k8s service and ingress.
+### Remove SSH from public firewalld zone
 
-See the sample `ingress.yaml` and the `svc.yaml` inside the `k8s` folder to get an idea.
+This is to remove SSH access from the public zone, which will cease SSH access from everywhere.
+
+```
+firewall-cmd --zone=public --remove-service=ssh --permanent
+```
+
+then reload (since we are using `--permanent`):
+
+```
+firewall-cmd --reload
+```
+
+This removes ssh access for everyone. This is where the application comes into play, and we enable access based on IP.
+
+**Confirmirmation for the step**:
+
+```
+firewall-cmd --zone=public --list-all
+```
+
+_Notice the `ssh` service will not be listed in public zone anymore._
+
+### Expose the REST server
+
+The REST server can be exposed in a number of different ways, I have 2 examples on how it can be exposed:
+
+1. Using a `NodePort` kubernetes service ([link](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc-nodeport.yaml))
+2. Using `ingress` along with a kubernetes service ([link](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/ingress.yaml))
 
 ### Configure linux systemd service
 
+See [this](https://github.com/prashantgupta24/firewalld-rest/blob/master/firewalld-rest.service) for an example of a linux systemd service.
+
+**Note**: This service assumes your binary is at `/root/rest` location, you can change that in the file above.
+
 ### Start and enable systemd service.
 
-### Routes
+**Start**
+
+```
+systemctl start firewalld-rest
+```
+
+**Enable**
+
+```
+systemctl enable firewalld-rest
+```
+
+### Interacting with the REST server
 
 #### Index page
 
@@ -118,6 +166,23 @@ route{
 
 ```
 curl --location --request GET '<SERVER_IP>:8080/m1' \
+--header 'Authorization: Bearer <signed_jwt>'
+```
+
+#### Show all IPs
+
+```
+route{
+    "Show all IPs present",
+    "GET",
+    "/ip",
+}
+```
+
+##### Sample query
+
+```
+curl --location --request GET '<SERVER_IP>:8080/m1/ip' \
 --header 'Authorization: Bearer <signed_jwt>'
 ```
 
@@ -138,23 +203,6 @@ curl --location --request POST '<SERVER_IP>:8080/m1/ip' \
 --header 'Authorization: Bearer <signed_jwt>' \
 --header 'Content-Type: application/json' \
 --data-raw '{"ip":"10.xx.xx.xx","domain":"example.com"}'
-```
-
-#### Show all IPs
-
-```
-route{
-    "Show all IPs present",
-    "GET",
-    "/ip",
-}
-```
-
-##### Sample query
-
-```
-curl --location --request GET '<SERVER_IP>:8080/m1/ip' \
---header 'Authorization: Bearer <signed_jwt>'
 ```
 
 #### Show if IP is present
