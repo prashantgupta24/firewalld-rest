@@ -214,7 +214,7 @@ func TestDeleteIPNotFound(t *testing.T) {
 
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			status, http.StatusNotFound)
 	}
 
 	// Check the response body is what we expect.

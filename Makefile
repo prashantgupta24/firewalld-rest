@@ -1,4 +1,5 @@
 COVER_PROFILE=cover.out
+COVER_PROFILE_TEMP=cover.tmp.out
 COVER_HTML=cover.html
 
 .PHONY: build $(COVER_PROFILE) $(COVER_HTML)
@@ -7,11 +8,14 @@ all: coverage vet
 
 coverage: $(COVER_HTML)
 
-$(COVER_HTML): $(COVER_PROFILE)
+$(COVER_HTML): $(COVER_PROFILE) ignoreFiles 
 	go tool cover -html=$(COVER_PROFILE) -o $(COVER_HTML)
 
+ignoreFiles:
+	cat $(COVER_PROFILE_TEMP) | grep -v "middleware.go" | grep -v "route.go" > $(COVER_PROFILE)
+
 $(COVER_PROFILE):
-	env=local go test -v -failfast -race -coverprofile=$(COVER_PROFILE) ./...
+	env=local go test -v -failfast -race -coverprofile=$(COVER_PROFILE_TEMP) ./...
 
 vet:
 	go vet ./...
