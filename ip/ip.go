@@ -13,14 +13,17 @@ type Instance struct {
 	Domain string `json:"domain"`
 }
 
+//handler for managing IP related tasks
 type handler struct {
-	filename string
+	db db.Instance
 }
 
 //GetHandler gets handler for IP
 func GetHandler() *handler {
 	handler := &handler{
-		filename: "./firewalld-rest.db",
+		db: &db.FileType{
+			Path: "./firewalld-rest.db",
+		},
 	}
 	return handler
 }
@@ -44,7 +47,7 @@ func init() {
 		// 	Domain: "second",
 		// }
 
-		db.Register(ipStore)
+		handler.db.Register(ipStore)
 		if err := handler.saveIPStore(ipStore); err != nil {
 			log.Fatal(err)
 		}
@@ -126,7 +129,7 @@ func (handler *handler) DeleteIP(ipAddr string) (*Instance, error) {
 
 func (handler *handler) loadIPStore() (map[string]*Instance, error) {
 	var ipStore = make(map[string]*Instance)
-	if err := db.Load(handler.filename, &ipStore); err != nil {
+	if err := handler.db.Load(&ipStore); err != nil {
 		return nil, fmt.Errorf("error while loading from file : %v", err)
 	}
 	//fmt.Println("ipstore: ", ipStore)
@@ -134,7 +137,7 @@ func (handler *handler) loadIPStore() (map[string]*Instance, error) {
 }
 
 func (handler *handler) saveIPStore(ipStore map[string]*Instance) error {
-	if err := db.Save(handler.filename, ipStore); err != nil {
+	if err := handler.db.Save(ipStore); err != nil {
 		return fmt.Errorf("error while saving to file : %v", err)
 	}
 	return nil
