@@ -7,11 +7,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/firewalld-rest/ip"
 	"github.com/gorilla/mux"
 )
 
 var data1 string
 var data2 string
+var dataInvalid string
 var ipAddr1 string
 var ipAddr2 string
 var ipAddr3 string
@@ -22,6 +24,7 @@ func setup() {
 	ipAddr3 = "10.50.100.150"
 	data1 = `{"ip":"` + ipAddr1 + `","domain":"test.com"}`
 	data2 = `{"ip":"` + ipAddr2 + `","domain":"test.com"}`
+	dataInvalid = `{"ip":"` + ipAddr2 //missing domain
 }
 
 func shutdown() {
@@ -33,6 +36,26 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 	shutdown()
 	os.Exit(code)
+}
+
+func TestIndex(t *testing.T) {
+	req, err := http.NewRequest("GET", "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := newRequestRecorder(req, Index)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Check the response body is what we expect.
+	expected := `Welcome!`
+	if strings.TrimSpace(rr.Body.String()) != expected {
+		t.Errorf("handler returned unexpected body: \ngot  %v want %v",
+			rr.Body.String(), expected)
+	}
 }
 
 func TestShowAllIPs(t *testing.T) {
@@ -240,6 +263,36 @@ func TestShowAllIPsAfter(t *testing.T) {
 	if strings.Index(rr.Body.String(), ipAddr1) != -1 {
 		t.Errorf("handler contained deleted entry: \ngot  %vdeleted %v",
 			rr.Body.String(), ipAddr1)
+	}
+}
+
+func TestPopulateModelFromHandler(t *testing.T) {
+
+	req, err := http.NewRequest("POST", "/ip", strings.NewReader("garbage"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ipInstance := &ip.Instance{}
+	if err := populateModelFromHandler(nil, req, ipInstance); err == nil {
+		t.Errorf("should have errored")
+	}
+
+	req, err = http.NewRequest("POST", "/ip", strings.NewReader(dataInvalid))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ipInstance = &ip.Instance{}
+	if err := populateModelFromHandler(nil, req, ipInstance); err == nil {
+		t.Errorf("should have errored")
+	}
+
+	req, err = http.NewRequest("POST", "/ip", strings.NewReader(data1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ipInstance = &ip.Instance{}
+	if err := populateModelFromHandler(nil, req, ipInstance); err != nil {
+		t.Errorf("should not have errored : %v", err)
 	}
 }
 

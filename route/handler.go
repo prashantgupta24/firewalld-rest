@@ -15,6 +15,7 @@ import (
 )
 
 //Index page
+// GET /
 func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Welcome!\n")
 }
@@ -142,7 +143,6 @@ func populateModelFromHandler(w http.ResponseWriter, r *http.Request, ip interfa
 	if err := r.Body.Close(); err != nil {
 		return err
 	}
-	log.Printf("Response body : %s\n", body)
 	if err := json.Unmarshal(body, ip); err != nil {
 		return err
 	}
