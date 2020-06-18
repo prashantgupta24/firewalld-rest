@@ -1,5 +1,5 @@
 .env
-*.tmp
+*.db
 build/
 
 # coverage

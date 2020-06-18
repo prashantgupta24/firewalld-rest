@@ -25,7 +25,7 @@ func setup() {
 }
 
 func shutdown() {
-	os.Remove("firewalld-rest-db.tmp")
+	os.Remove("firewalld-rest.db")
 }
 
 func TestMain(m *testing.M) {

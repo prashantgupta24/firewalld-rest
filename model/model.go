@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/firewalld-rest/db"
 )
@@ -20,19 +19,9 @@ type ipHandler struct {
 
 //GetIPHandler gets handler for IP
 func GetIPHandler() *ipHandler {
-
-	var filename string
-	env := os.Getenv("env")
-	if env == "local" {
-		filename = "./firewalld-rest-db.tmp"
-	} else {
-		filename = "/root/rest/firewalld-rest-db.tmp"
-	}
-
 	ipHandler := &ipHandler{
-		filename: filename,
+		filename: "./firewalld-rest.db",
 	}
-
 	return ipHandler
 }
 
