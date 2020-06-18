@@ -8,8 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 
+	"github.com/firewalld-rest/firewallcmd"
 	"github.com/firewalld-rest/ip"
 	"github.com/gorilla/mux"
 )
@@ -39,32 +39,19 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 
 	env := os.Getenv("env")
 	if env != "local" {
-		//example:
-		//firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.10.99.10/32" port protocol="tcp" port="22" accept'
-
-		//command 1
-		cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--add-rich-rule=rule family="ipv4" source address="`+ipInstance.IP+`/32" port protocol="tcp" port="22" accept`)
-
-		//uncomment for debugging
-		// for _, v := range cmd1.Args {
-		// 	fmt.Println(v)
-		// }\
-
-		out1, err := cmd1.CombinedOutput()
-		if err != nil {
-			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd1.String(), err.Error()))
+		command1, output1, err1 := firewallcmd.EnableRichRuleForIP(ipInstance.IP)
+		if err1 != nil {
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command1, err1.Error()))
 			return
 		}
-		fmt.Printf("combined out:\n%s\n", string(out1))
+		fmt.Printf("combined out:\n%s\n", output1)
 
-		//command 2
-		cmd2 := exec.Command("firewall-cmd", "--reload")
-		out2, err := cmd2.CombinedOutput()
+		command2, output2, err2 := firewallcmd.Reload()
 		if err != nil {
-			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd2.String(), err.Error()))
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command2, err2.Error()))
 			return
 		}
-		fmt.Printf("combined out:\n%s\n", string(out2))
+		fmt.Printf("combined out:\n%s\n", output2)
 	}
 
 	err = ip.GetHandler().AddIP(ipInstance)
@@ -120,24 +107,19 @@ func IPDelete(w http.ResponseWriter, r *http.Request) {
 
 	env := os.Getenv("env")
 	if env != "local" {
-		//command 1
-		cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--remove-rich-rule=rule family="ipv4" source address="`+ipAddr+`/32" port protocol="tcp" port="22" accept`)
-		out1, err := cmd1.CombinedOutput()
+		command1, output1, err1 := firewallcmd.DisableRichRuleForIP(ipAddr)
 		if err != nil {
-			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd1.String(), err.Error()))
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command1, err1.Error()))
 			return
 		}
-		fmt.Printf("combined out:\n%s\n", string(out1))
+		fmt.Printf("combined out:\n%s\n", output1)
 
-		//command 2
-		cmd2 := exec.Command("firewall-cmd", "--reload")
-		out2, err := cmd2.CombinedOutput()
+		command2, output2, err2 := firewallcmd.Reload()
 		if err != nil {
-			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", cmd2.String(), err.Error()))
+			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command2, err2.Error()))
 			return
 		}
-		fmt.Printf("combined out:\n%s\n", string(out2))
-
+		fmt.Printf("combined out:\n%s\n", output2)
 	}
 
 	ip, err := ip.GetHandler().DeleteIP(ipAddr)
