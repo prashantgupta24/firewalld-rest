@@ -22,7 +22,7 @@ type handlerStruct struct {
 func GetHandler() Handler {
 	once.Do(func() {
 		dbInstance := db.GetFileTypeInstance()
-		handlerInstance := &handlerStruct{
+		handlerInstance = &handlerStruct{
 			db: dbInstance,
 		}
 		ipStore, err := handlerInstance.loadIPStore()
@@ -126,7 +126,6 @@ func (handler *handlerStruct) loadIPStore() (map[string]*Instance, error) {
 	if err := handler.db.Load(&ipStore); err != nil {
 		return nil, fmt.Errorf("error while loading from file : %v", err)
 	}
-	//fmt.Println("ipstore: ", ipStore)
 	return ipStore, nil
 }
 

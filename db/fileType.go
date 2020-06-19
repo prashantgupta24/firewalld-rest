@@ -72,9 +72,7 @@ func (fileType *fileType) Load(v interface{}) error {
 	if err != nil {
 		return fmt.Errorf("could not locate absolute path : %v", err)
 	}
-	fmt.Println("loading file : ", fileType.path)
 	if fileExists(fileType.path) {
-		fmt.Println("file exists!")
 		lock.Lock()
 		defer lock.Unlock()
 		f, err := os.Open(fileType.path)
