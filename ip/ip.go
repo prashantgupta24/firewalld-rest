@@ -3,6 +3,7 @@ package ip
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/firewalld-rest/db"
 )
@@ -19,10 +20,19 @@ type handler struct {
 }
 
 //GetHandler gets handler for IP
-func GetHandler() *handler {
-	handler := &handler{
+func GetHandler() handler {
+
+	path := os.Getenv("FIREWALLD_REST_DB_PATH")
+	fmt.Println("FIREWALLD_REST_DB_PATH : ", path)
+	if path != "" {
+		path = parsePath(path)
+		path += "/firewalld-rest.db"
+	} else {
+		path = "./firewalld-rest.db"
+	}
+	handler := handler{
 		db: &db.FileType{
-			Path: "./firewalld-rest.db",
+			Path: path,
 		},
 	}
 	return handler
@@ -55,7 +65,7 @@ func init() {
 }
 
 //GetIP from the db
-func (handler *handler) GetIP(ipAddr string) (*Instance, error) {
+func (handler handler) GetIP(ipAddr string) (*Instance, error) {
 	ipStore, err := handler.loadIPStore()
 	if err != nil {
 		return nil, err
@@ -68,7 +78,7 @@ func (handler *handler) GetIP(ipAddr string) (*Instance, error) {
 }
 
 //GetAllIPs from the db
-func (handler *handler) GetAllIPs() ([]*Instance, error) {
+func (handler handler) GetAllIPs() ([]*Instance, error) {
 	ips := []*Instance{}
 	ipStore, err := handler.loadIPStore()
 	if err != nil {
@@ -81,7 +91,7 @@ func (handler *handler) GetAllIPs() ([]*Instance, error) {
 }
 
 //CheckIPExists checks if IP is in db
-func (handler *handler) CheckIPExists(ipAddr string) (bool, error) {
+func (handler handler) CheckIPExists(ipAddr string) (bool, error) {
 	ipStore, err := handler.loadIPStore()
 	if err != nil {
 		return false, err
@@ -94,7 +104,7 @@ func (handler *handler) CheckIPExists(ipAddr string) (bool, error) {
 }
 
 //AddIP to the db
-func (handler *handler) AddIP(ip *Instance) error {
+func (handler handler) AddIP(ip *Instance) error {
 	ipStore, err := handler.loadIPStore()
 	if err != nil {
 		return err
@@ -111,7 +121,7 @@ func (handler *handler) AddIP(ip *Instance) error {
 }
 
 //DeleteIP from the db
-func (handler *handler) DeleteIP(ipAddr string) (*Instance, error) {
+func (handler handler) DeleteIP(ipAddr string) (*Instance, error) {
 	ipStore, err := handler.loadIPStore()
 	if err != nil {
 		return nil, err
@@ -127,7 +137,7 @@ func (handler *handler) DeleteIP(ipAddr string) (*Instance, error) {
 	return ip, nil
 }
 
-func (handler *handler) loadIPStore() (map[string]*Instance, error) {
+func (handler handler) loadIPStore() (map[string]*Instance, error) {
 	var ipStore = make(map[string]*Instance)
 	if err := handler.db.Load(&ipStore); err != nil {
 		return nil, fmt.Errorf("error while loading from file : %v", err)
@@ -136,9 +146,18 @@ func (handler *handler) loadIPStore() (map[string]*Instance, error) {
 	return ipStore, nil
 }
 
-func (handler *handler) saveIPStore(ipStore map[string]*Instance) error {
+func (handler handler) saveIPStore(ipStore map[string]*Instance) error {
 	if err := handler.db.Save(ipStore); err != nil {
 		return fmt.Errorf("error while saving to file : %v", err)
 	}
 	return nil
+}
+
+func parsePath(path string) string {
+	lastChar := path[len(path)-1:]
+
+	if lastChar == "/" {
+		path = path[:len(path)-1]
+	}
+	return path
 }

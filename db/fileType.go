@@ -3,9 +3,11 @@ package db
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -40,6 +42,10 @@ func (fileType *FileType) Save(v interface{}) error {
 
 // Load loads the file at path into v.
 func (fileType *FileType) Load(v interface{}) error {
+	fullPath, err := filepath.Abs(fileType.Path)
+	if err != nil {
+		return fmt.Errorf("could not locate absolute path : %v", err)
+	}
 	if fileExists(fileType.Path) {
 		lock.Lock()
 		defer lock.Unlock()
@@ -48,9 +54,10 @@ func (fileType *FileType) Load(v interface{}) error {
 			return err
 		}
 		defer f.Close()
+		log.Printf("Db file found: %v\n", fullPath)
 		return unmarshal(f, v)
 	}
-	log.Printf("File %s not found, will be created\n", fileType.Path)
+	log.Printf("Db file not found, will be created here: %v\n", fullPath)
 	return nil
 }
 

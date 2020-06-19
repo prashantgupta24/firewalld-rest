@@ -24,7 +24,7 @@ start-local: clean-db
 start-server:
 	go run cmd/main.go
 build-linux:
-	env GOOS=linux GOARCH=amd64 go build -o build/firewalld-rest cmd/main.go
+	env GOOS=linux GOARCH=amd64 go build -ldflags "-X ip.FIREWALLD_REST_DB_PATH=$FIREWALLD_REST_DB_PATH" -o build/firewalld-rest cmd/main.go
 build-mac:
 	go build -o build/firewalld-rest cmd/main.go
 copy: build-linux

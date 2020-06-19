@@ -81,9 +81,11 @@ This repo assumes you have:
 
 ### Local changes required
 
-1. Make sure you have updated the [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own public cert for which you have the private key. See the section for [generating public/private key](#commands-for-generating-publicprivate-key)
+1. Make sure you have updated the [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own public cert for which you have the private key. See the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then you can go to jwt.io and generate a valid signed JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST server.
 
-1. Make sure you update the path to where you want to keep your binary on the server. This repo assumes you have kept in under `/root/rest`. If **not**, make sure to change the [Linux systemd service](#configure-linux-systemd-service).
+1. Make sure you update the path to where you want to keep your binary on the server. The [Linux systemd service](#configure-linux-systemd-service) example assumes you have kept it in `/root/rest/firewalld-rest`. If **not**, make sure to change the service.
+
+1. Set the `FIREWALLD_REST_DB_PATH` env variable on the server (`export FIREWALLD_REST_DB_PATH=/dir/to/db`). This variable sets the path where the `.db` file will be saved. It should be saved in a protected location such that it is not accidentally deleted on server restart or by any other user. If this env variable is not set, the file will be created by default under `/`.
 
 ### Build the application
 
@@ -134,7 +136,7 @@ The REST server can be exposed in a number of different ways, I have 2 examples 
 
 See [this](https://github.com/prashantgupta24/firewalld-rest/blob/master/firewalld-rest.service) for an example of a linux systemd service.
 
-**Note**: This service assumes your binary is at `/root/rest` location, you can change that in the file above.
+**Note**: This service assumes your binary is at `/root/rest/firewalld-rest`. You can change that in the file above.
 
 ### Start and enable systemd service.
 
