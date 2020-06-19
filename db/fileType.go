@@ -80,7 +80,6 @@ func (fileType *fileType) Load(v interface{}) error {
 			return err
 		}
 		defer f.Close()
-		log.Printf("Db file found: %v\n", fullPath)
 		return unmarshal(f, v)
 	}
 	log.Printf("Db file not found, will be created here: %v\n", fullPath)
