@@ -13,8 +13,12 @@ import (
 
 var lock sync.Mutex
 var once sync.Once
-var defaultPath = "./firewalld-rest.db"
-var pathFromEnv string
+var pathFromEnv string //This will be set through the build command, see Makefile
+
+const (
+	fileName    = "firewalld-rest.db"
+	defaultPath = "./"
+)
 
 //singleton reference
 var fileTypeInstance *fileType
@@ -27,14 +31,13 @@ type fileType struct {
 //GetFileTypeInstance returns the singleton instance of the filedb object
 func GetFileTypeInstance() Instance {
 	once.Do(func() {
-		dbPath := defaultPath
-		fmt.Println("FIREWALLD_REST_DB_PATH : ", pathFromEnv)
+		path := defaultPath + fileName
 		if pathFromEnv != "" {
 			pathFromEnv = parsePath(pathFromEnv)
-			pathFromEnv += "/firewalld-rest.db"
-			dbPath = pathFromEnv
+			pathFromEnv += fileName
+			path = pathFromEnv
 		}
-		fileTypeInstance = &fileType{path: dbPath}
+		fileTypeInstance = &fileType{path: path}
 	})
 	return fileTypeInstance
 }
@@ -122,8 +125,8 @@ func fileExists(filename string) bool {
 func parsePath(path string) string {
 	lastChar := path[len(path)-1:]
 
-	if lastChar == "/" {
-		path = path[:len(path)-1]
+	if lastChar != "/" {
+		path += "/"
 	}
 	return path
 }

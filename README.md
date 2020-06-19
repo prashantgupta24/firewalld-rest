@@ -24,12 +24,12 @@ Once you are done using the machine, you can remove your IP using the same REST 
 - [About the application](#about-the-application)
   - [Authorization](#authorization)
   - [DB](#db)
-  - [Main functions](#main-functions)
+  - [Routing](#routing)
   - [Tests](#tests)
 - [How to install and use on server](#how-to-install-and-use-on-server)
   - [Local changes required](#local-changes-required)
   - [Build the application](#build-the-application)
-  - [Copy build file over to machine.](#copy-build-file-over-to-machine)
+  - [Copy binary file over to server](#copy-binary-file-over-to-server)
   - [Remove SSH from public firewalld zone](#remove-ssh-from-public-firewalld-zone)
   - [Expose the REST server](#expose-the-rest-server)
   - [Configure linux systemd service](#configure-linux-systemd-service)
@@ -47,14 +47,14 @@ Once you are done using the machine, you can remove your IP using the same REST 
       - [Sample query](#sample-query-4)
   - [IP struct](#ip-struct)
 - [Helpful tips/links](#helpful-tipslinks)
-  - [Kubernetes endpoint](#kubernetes-endpoint)
-  - [Firewalld](#firewalld)
+  - [Creating custom kubernetes endpoint](#creating-custom-kubernetes-endpoint)
+  - [Firewalld rules](#firewalld-rules)
     - [Useful commands](#useful-commands)
     - [Rich rules](#rich-rules)
     - [Misc tips](#misc-tips)
-  - [JWT in Go](#jwt-in-go)
-  - [Golang Exec](#golang-exec)
-  - [Systemd](#systemd)
+  - [Using JWT in Go](#using-jwt-in-go)
+  - [Using golang Exec](#using-golang-exec)
+  - [Systemd services](#systemd-services)
   - [Commands for generating public/private key](#commands-for-generating-publicprivate-key)
 
 <!-- /code_chunk_output -->
@@ -73,7 +73,7 @@ This repo assumes you have:
 
 ### DB
 
-### Main functions
+### Routing
 
 ### Tests
 
@@ -83,23 +83,29 @@ This repo assumes you have:
 
 1. Make sure you have updated the [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own public cert for which you have the private key. See the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then you can go to jwt.io and generate a valid signed JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST server.
 
-1. Make sure you update the path to where you want to keep your binary on the server. The [Linux systemd service](#configure-linux-systemd-service) example assumes you have kept it in `/root/rest/firewalld-rest`. If **not**, make sure to change the service.
-
-1. Set the `FIREWALLD_REST_DB_PATH` env variable on the server (`export FIREWALLD_REST_DB_PATH=/dir/to/db`). This variable sets the path where the `.db` file will be saved. It should be saved in a protected location such that it is not accidentally deleted on server restart or by any other user. If this env variable is not set, the file will be created by default under `/`.
+1. Make sure you update the path to where you want to keep your binary on the server in the [Linux systemd service](#configure-linux-systemd-service). In the definition I have here, it assumes you have kept it in `/root/rest/firewalld-rest`. If **not**, make sure to change the service definition (covered again later).
 
 ### Build the application
 
-`make build-linux` should create a binary under `build` directory, called `firewalld-rest`. It should contain everything required to run the application on a linux based server.
+Run the command:
 
-### Copy build file over to machine.
+```
+make build-linux DB_PATH=/dir/to/db/
+```
+
+It will create a binary under the build directory, called `firewalld-rest`. The `DB_PATH=/dir/to/keep/db` statement sets the path where the `.db` file will be saved. It should be saved in a protected location such that it is not accidentally deleted on server restart or by any other user. A good place for it would be in the same directory where you will copy the binary over to (in the next step). That way you will not forget where it is.
+
+If this env variable is not set, the file will be created by default under `/`.
+
+Once the binary is built, it should contain everything required to run the application on a linux based server.
+
+### Copy binary file over to server
 
 ```
 scp build/firewalld-rest root@<server>:/root/rest
 ```
 
-This assumes you have `root` access, and you are putting the build in the `/root/rest` folder. Without `root` access, the application will not be able to run the `firewall-cmd` commands that it needs to run to add the IP address to the firewall rules.
-
-_Note_: if you want to change the directory where you want to keep the binary, then make sure you edit the `firewalld-rest.service` file, as the linux systemd service expects the `/root/rest` location when running the binary.
+_Note_: if you want to change the directory where you want to keep the binary, then make sure you edit the `firewalld-rest.service` file, as the `linux systemd service` definition example in this repo expects the location of the binary to be `/root/rest`.
 
 ### Remove SSH from public firewalld zone
 
@@ -150,6 +156,14 @@ systemctl start firewalld-rest
 
 ```
 systemctl enable firewalld-rest
+```
+
+**Logs**
+
+You can see the logs for the service using:
+
+```
+journalctl -f
 ```
 
 ### Interacting with the REST server
@@ -252,11 +266,11 @@ type IP struct {
 
 ## Helpful tips/links
 
-### Kubernetes endpoint
+### Creating custom kubernetes endpoint
 
 - https://theithollow.com/2019/02/04/kubernetes-endpoints/
 
-### Firewalld
+### Firewalld rules
 
 - https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7
 
@@ -298,19 +312,19 @@ firewall-cmd --reload
 success
 ```
 
-### JWT in Go
+### Using JWT in Go
 
 - https://www.thepolyglotdeveloper.com/2017/03/authenticate-a-golang-api-with-json-web-tokens/
 
-### Golang Exec
+### Using golang Exec
 
 - https://stackoverflow.com/questions/39151420/golang-executing-command-with-spaces-in-one-of-the-parts
 
-### Systemd
+### Systemd services
 
 - https://medium.com/@benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6
 - https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
-- [See logs using journalctl](https://www.linode.com/docs/quick-answers/linux/how-to-use-journalctl/)
+- [Logs using journalctl](https://www.linode.com/docs/quick-answers/linux/how-to-use-journalctl/)
 
 ### Commands for generating public/private key
 
