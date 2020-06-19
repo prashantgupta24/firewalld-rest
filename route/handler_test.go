@@ -18,7 +18,11 @@ var ipAddr1 string
 var ipAddr2 string
 var ipAddr3 string
 
+var oldDBPath string
+
 func setup() {
+	oldDBPath = os.Getenv("FIREWALLD_REST_DB_PATH")
+	os.Setenv("FIREWALLD_REST_DB_PATH", "")
 	ipAddr1 = "10.20.30.40"
 	ipAddr2 = "20.40.60.80"
 	ipAddr3 = "10.50.100.150"
@@ -29,6 +33,7 @@ func setup() {
 
 func shutdown() {
 	os.Remove("firewalld-rest.db")
+	os.Setenv("FIREWALLD_REST_DB_PATH", oldDBPath)
 }
 
 func TestMain(m *testing.M) {

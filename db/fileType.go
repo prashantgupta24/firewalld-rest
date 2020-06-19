@@ -12,22 +12,43 @@ import (
 )
 
 var lock sync.Mutex
+var once sync.Once
+var defaultPath = "./firewalld-rest.db"
+var pathFromEnv string
 
-//FileType is the main struct for file database
-type FileType struct {
-	Path string
+//singleton reference
+var fileTypeInstance *fileType
+
+//fileType is the main struct for file database
+type fileType struct {
+	path string
+}
+
+//GetFileTypeInstance returns the singleton instance of the filedb object
+func GetFileTypeInstance() Instance {
+	once.Do(func() {
+		dbPath := defaultPath
+		fmt.Println("FIREWALLD_REST_DB_PATH : ", pathFromEnv)
+		if pathFromEnv != "" {
+			pathFromEnv = parsePath(pathFromEnv)
+			pathFromEnv += "/firewalld-rest.db"
+			dbPath = pathFromEnv
+		}
+		fileTypeInstance = &fileType{path: dbPath}
+	})
+	return fileTypeInstance
 }
 
 // Register interface with gob
-func (fileType *FileType) Register(v interface{}) {
+func (fileType *fileType) Register(v interface{}) {
 	gob.Register(v)
 }
 
 // Save saves a representation of v to the file at path.
-func (fileType *FileType) Save(v interface{}) error {
+func (fileType *fileType) Save(v interface{}) error {
 	lock.Lock()
 	defer lock.Unlock()
-	f, err := os.Create(fileType.Path)
+	f, err := os.Create(fileType.path)
 	if err != nil {
 		return err
 	}
@@ -41,15 +62,17 @@ func (fileType *FileType) Save(v interface{}) error {
 }
 
 // Load loads the file at path into v.
-func (fileType *FileType) Load(v interface{}) error {
-	fullPath, err := filepath.Abs(fileType.Path)
+func (fileType *fileType) Load(v interface{}) error {
+	fullPath, err := filepath.Abs(fileType.path)
 	if err != nil {
 		return fmt.Errorf("could not locate absolute path : %v", err)
 	}
-	if fileExists(fileType.Path) {
+	fmt.Println("loading file : ", fileType.path)
+	if fileExists(fileType.path) {
+		fmt.Println("file exists!")
 		lock.Lock()
 		defer lock.Unlock()
-		f, err := os.Open(fileType.Path)
+		f, err := os.Open(fileType.path)
 		if err != nil {
 			return err
 		}
@@ -92,4 +115,13 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func parsePath(path string) string {
+	lastChar := path[len(path)-1:]
+
+	if lastChar == "/" {
+		path = path[:len(path)-1]
+	}
+	return path
 }
