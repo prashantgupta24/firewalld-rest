@@ -39,6 +39,11 @@ func GetFileTypeInstance() Instance {
 	return fileTypeInstance
 }
 
+//Type of the db
+func (fileType *fileType) Type() string {
+	return "fileType"
+}
+
 // Register interface with gob
 func (fileType *fileType) Register(v interface{}) {
 	gob.Register(v)
