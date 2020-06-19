@@ -47,15 +47,7 @@ Once you are done using the machine, you can remove your IP using the same REST 
       - [Sample query](#sample-query-4)
   - [IP struct](#ip-struct)
 - [Helpful tips/links](#helpful-tipslinks)
-  - [Creating custom kubernetes endpoint](#creating-custom-kubernetes-endpoint)
-  - [Firewalld rules](#firewalld-rules)
-    - [Useful commands](#useful-commands)
-    - [Rich rules](#rich-rules)
-    - [Misc tips](#misc-tips)
-  - [Using JWT in Go](#using-jwt-in-go)
-  - [Using golang Exec](#using-golang-exec)
-  - [Systemd services](#systemd-services)
-  - [Commands for generating public/private key](#commands-for-generating-publicprivate-key)
+- [Commands for generating public/private key](#commands-for-generating-publicprivate-key)
 
 <!-- /code_chunk_output -->
 
@@ -266,67 +258,71 @@ type IP struct {
 
 ## Helpful tips/links
 
-### Creating custom kubernetes endpoint
+- ### Creating custom kubernetes endpoint
 
-- https://theithollow.com/2019/02/04/kubernetes-endpoints/
+  - https://theithollow.com/2019/02/04/kubernetes-endpoints/
 
-### Firewalld rules
+- ### Firewalld rules
 
-- https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7
+  - https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7
 
-#### Useful commands
+  #### Useful commands
 
-```
-firewall-cmd --get-default-zone
-firewall-cmd --get-active-zones
+  ```
+  firewall-cmd --get-default-zone
+  firewall-cmd --get-active-zones
 
-firewall-cmd --list-all-zones | less
+  firewall-cmd --list-all-zones | less
 
-firewall-cmd --zone=public --list-sources
-firewall-cmd --zone=public --list-services
-firewall-cmd --zone=public --list-all
+  firewall-cmd --zone=public --list-sources
+  firewall-cmd --zone=public --list-services
+  firewall-cmd --zone=public --list-all
 
-firewall-cmd --zone=public --add-service=ssh --permanent
+  firewall-cmd --zone=public --add-service=ssh --permanent
 
-firewall-cmd --zone=internal --add-source=70.xx.xx.xxx/32 --permanent
+  firewall-cmd --zone=internal --add-source=70.xx.xx.xxx/32 --permanent
 
-firewall-cmd --reload
-```
+  firewall-cmd --reload
+  ```
 
-#### Rich rules
+  #### Rich rules
 
-`firewall-cmd --permanent --zone=public --list-rich-rules`
+  `firewall-cmd --permanent --zone=public --list-rich-rules`
 
-`firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.10.99.10/32" port protocol="tcp" port="22" accept'`
+  `firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.10.99.10/32" port protocol="tcp" port="22" accept'`
 
-`firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.100.0/24" invert="True" drop'`
+  `firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.100.0/24" invert="True" drop'`
 
-> Reject will reply back with an ICMP packet noting the rejection, while a drop will just silently drop the traffic and do nothing else, so a drop may be preferable in terms of security as a reject response confirms the existence of the system as it is rejecting the request.
+  > Reject will reply back with an ICMP packet noting the rejection, while a drop will just silently drop the traffic and do nothing else, so a drop may be preferable in terms of security as a reject response confirms the existence of the system as it is rejecting the request.
 
-#### Misc tips
+  #### Misc tips
 
-> --add-source=IP can be used to add an IP address or range of addresses to a zone. This will mean that if any source traffic enters the systems that matches this, the zone that we have set will be applied to that traffic. In this case we set the ‘testing’ zone to be associated with traffic from the 10.10.10.0/24 range.
+  > --add-source=IP can be used to add an IP address or range of addresses to a zone. This will mean that if any source traffic enters the systems that matches this, the zone that we have set will be applied to that traffic. In this case we set the ‘testing’ zone to be associated with traffic from the 10.10.10.0/24 range.
 
-```
-[root@centos7 ~]# firewall-cmd --permanent --zone=testing --add-source=10.10.10.0/24
-success
-```
+  ```
+  [root@centos7 ~]# firewall-cmd --permanent --zone=testing --add-source=10.10.10.0/24
+  success
+  ```
 
-### Using JWT in Go
+- ### Using JWT in Go
 
-- https://www.thepolyglotdeveloper.com/2017/03/authenticate-a-golang-api-with-json-web-tokens/
+  - https://www.thepolyglotdeveloper.com/2017/03/authenticate-a-golang-api-with-json-web-tokens/
 
-### Using golang Exec
+- ### Using golang Exec
 
-- https://stackoverflow.com/questions/39151420/golang-executing-command-with-spaces-in-one-of-the-parts
+  - https://stackoverflow.com/questions/39151420/golang-executing-command-with-spaces-in-one-of-the-parts
 
-### Systemd services
+- ### Systemd services
 
-- https://medium.com/@benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6
-- https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
-- [Logs using journalctl](https://www.linode.com/docs/quick-answers/linux/how-to-use-journalctl/)
+  - https://medium.com/@benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6
+  - https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
+  - [Logs using journalctl](https://www.linode.com/docs/quick-answers/linux/how-to-use-journalctl/)
 
-### Commands for generating public/private key
+- ### Using LDFlags in golang
+
+  - https://www.digitalocean.com/community/tutorials/using-ldflags-to-set-version-information-for-go-applications
+
+## Commands for generating public/private key
 
 ```
 openssl genrsa -key private-key-sc.pem
