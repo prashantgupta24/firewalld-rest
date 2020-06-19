@@ -3,29 +3,60 @@ package db
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
 var lock sync.Mutex
+var once sync.Once
+var pathFromEnv string //This will be set through the build command, see Makefile
 
-//FileType is the main struct for file database
-type FileType struct {
-	Path string
+const (
+	fileName    = "firewalld-rest.db"
+	defaultPath = "./"
+)
+
+//singleton reference
+var fileTypeInstance *fileType
+
+//fileType is the main struct for file database
+type fileType struct {
+	path string
+}
+
+//GetFileTypeInstance returns the singleton instance of the filedb object
+func GetFileTypeInstance() Instance {
+	once.Do(func() {
+		path := defaultPath + fileName
+		if pathFromEnv != "" {
+			pathFromEnv = parsePath(pathFromEnv)
+			pathFromEnv += fileName
+			path = pathFromEnv
+		}
+		fileTypeInstance = &fileType{path: path}
+	})
+	return fileTypeInstance
+}
+
+//Type of the db
+func (fileType *fileType) Type() string {
+	return "fileType"
 }
 
 // Register interface with gob
-func (fileType *FileType) Register(v interface{}) {
+func (fileType *fileType) Register(v interface{}) {
 	gob.Register(v)
 }
 
 // Save saves a representation of v to the file at path.
-func (fileType *FileType) Save(v interface{}) error {
+func (fileType *fileType) Save(v interface{}) error {
 	lock.Lock()
 	defer lock.Unlock()
-	f, err := os.Create(fileType.Path)
+	f, err := os.Create(fileType.path)
 	if err != nil {
 		return err
 	}
@@ -39,18 +70,22 @@ func (fileType *FileType) Save(v interface{}) error {
 }
 
 // Load loads the file at path into v.
-func (fileType *FileType) Load(v interface{}) error {
-	if fileExists(fileType.Path) {
+func (fileType *fileType) Load(v interface{}) error {
+	fullPath, err := filepath.Abs(fileType.path)
+	if err != nil {
+		return fmt.Errorf("could not locate absolute path : %v", err)
+	}
+	if fileExists(fileType.path) {
 		lock.Lock()
 		defer lock.Unlock()
-		f, err := os.Open(fileType.Path)
+		f, err := os.Open(fileType.path)
 		if err != nil {
 			return err
 		}
 		defer f.Close()
 		return unmarshal(f, v)
 	}
-	log.Printf("File %s not found, will be created\n", fileType.Path)
+	log.Printf("Db file not found, will be created here: %v\n", fullPath)
 	return nil
 }
 
@@ -85,4 +120,13 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func parsePath(path string) string {
+	lastChar := path[len(path)-1:]
+
+	if lastChar != "/" {
+		path += "/"
+	}
+	return path
 }
