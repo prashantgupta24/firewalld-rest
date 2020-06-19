@@ -95,7 +95,7 @@ make build-linux DB_PATH=/dir/to/db/
 
 It will create a binary under the build directory, called `firewalld-rest`. The `DB_PATH=/dir/to/keep/db` statement sets the path where the `.db` file will be saved. It should be saved in a protected location such that it is not accidentally deleted on server restart or by any other user. A good place for it would be in the same directory where you will copy the binary over to (in the next step). That way you will not forget where it is.
 
-If this env variable is not set, the file will be created by default under `/`.
+If `DB_PATH` variable is not set, the db file will be created by default under `/`. (_This happens because the binary is run by systemd. If we manually ran the binary file on the server, the db file would be created in the same directory._)
 
 Once the binary is built, it should contain everything required to run the application on a linux based server.
 
