@@ -95,14 +95,11 @@ _Note: Since there's only 1 node in the cluster, you will only ever use `/m1`. F
 
 For a multi-node cluster, an ingress resource would be highly beneficial.
 
-The first step would be to create the kubernetes service in each individual node, using the example [here](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc.yaml). The important thing to note is that we manually add the `Endpoints` resource for the service, which points to our node's private IP address and port `8080`.
+The **first** step would be to create the kubernetes service in each individual node, using the example [here](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc.yaml). The important thing to note is that we manually add the `Endpoints` resource for the service, which points to our node's private IP address and port `8080`.
 
-The second step is the [ingress](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/ingress.yaml) resource. It redirects different routes to different nodes in the cluster. For example, in the ingress file above,
+The **second** step is the [ingress](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/ingress.yaml) resource. It redirects different routes to different nodes in the cluster. For example, in the ingress file above,
 
-> A request to `/m1` will be redirected to the first node,
-> A request to `/m2` will be redirected to the second node,
-
-and so on. This will let you control each node's individual SSH access through a single endpoint.
+A request to `/m1` will be redirected to the `first` node, a request to `/m2` will be redirected to the `second` node, and so on. This will let you control each node's individual SSH access through a single endpoint.
 
 ### 2.4 Tests
 
@@ -114,7 +111,7 @@ The test can be run using `make test`. The emphasis has been given to testing th
 
 Update the file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own public cert for which you have the private key.
 
-If you want to create a new set, see the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then you can go to jwt.io and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST server, so keep the JWT safe.
+If you want to create a new set, see the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then you can go to `jwt.io` and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST server, so keep the JWT safe.
 
 ### 3.2 Build the application
 
