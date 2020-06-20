@@ -63,11 +63,19 @@ This repo assumes you have:
 
 ### Authorization
 
+The application authorizes using JWT. More to follow ...
+
 ### DB
+
+The application uses a file db for now. The architecture allows easy integration of any other type of db. More to follow ...
 
 ### Routing
 
+The application assumes it is going to be installed in a multi-node cluster, preferably running kubernetes. More to follow ...
+
 ### Tests
+
+The test can be run using `make test`. More to follow ...
 
 ## How to install and use on server
 
