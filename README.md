@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/prashantgupta24/firewalld-rest)](https://goreportcard.com/report/github.com/prashantgupta24/firewalld-rest) [![codecov](https://codecov.io/gh/prashantgupta24/firewalld-rest/branch/master/graph/badge.svg)](https://codecov.io/gh/prashantgupta24/firewalld-rest) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/prashantgupta24/firewalld-rest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/prashantgupta24/firewalld-rest)](https://goreportcard.com/report/github.com/prashantgupta24/firewalld-rest) [![codecov](https://codecov.io/gh/prashantgupta24/firewalld-rest/branch/master/graph/badge.svg)](https://codecov.io/gh/prashantgupta24/firewalld-rest) [![version][version-badge]][releases]
 
 # Firewalld-rest
 
@@ -376,3 +376,6 @@ curl --location --request DELETE '<SERVER_IP>:8080/m1/ip/10.xx.xx.xx' \
 openssl genrsa -key private-key-sc.pem
 openssl req -new -x509 -key private-key-sc.pem -out public.cert
 ```
+
+[version-badge]: https://img.shields.io/github/v/release/prashantgupta24/firewalld-rest
+[releases]: https://github.com/prashantgupta24/firewalld-rest/releases
