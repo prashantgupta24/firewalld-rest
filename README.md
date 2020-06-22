@@ -65,7 +65,11 @@ This repo assumes you have:
 
 ### 2.1 Authorization
 
-The application authorizes all requests by checking for a valid JWT. The public certificate is in this file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go), which the application uses to verify the JWT used to interact with the application (more information on how to create a new one later).
+The application uses `RS256` type algorithm to verify the incoming requests.
+
+> RS256 (RSA Signature with SHA-256) is an asymmetric algorithm, and it uses a public/private key pair: the identity provider has a private (secret) key used to generate the signature, and the consumer of the JWT gets a public key to validate the signature.
+
+The public certificate is in this file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go), which is something that will have to be changed before you can use it. (more information on how to create a new one later).
 
 ### 2.2 DB
 
@@ -109,9 +113,9 @@ The test can be run using `make test`. The emphasis has been given to testing th
 
 ### 3.1 Generate JWT
 
-Update the file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own public cert for which you have the private key.
+Update the file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own `public cert` for which you have the private key.
 
-If you want to create a new set, see the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then you can go to `jwt.io` and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST server, so keep the JWT safe.
+If you want to create a new set, see the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then after updating the file above, you can go to `jwt.io` and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST server, so keep the JWT safe.
 
 ### 3.2 Build the application
 
