@@ -78,6 +78,29 @@ func TestShowAllIPs(t *testing.T) {
 	}
 }
 
+func TestAddIPNonLocal(t *testing.T) {
+	oldEnv := os.Getenv("env")
+	os.Setenv("env", "staging")
+	req, err := http.NewRequest("POST", "/ip", strings.NewReader(data1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := newRequestRecorder(req, IPAdd)
+
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Check the response body is what we expect.
+	expected := `cannot exec command `
+	if strings.Index(rr.Body.String(), expected) == -1 {
+		t.Errorf("handler returned unexpected body: \ngot %v should have included : %v",
+			rr.Body.String(), expected)
+	}
+	os.Setenv("env", oldEnv)
+}
+
 func TestAddIP(t *testing.T) {
 	req, err := http.NewRequest("POST", "/ip", strings.NewReader(data1))
 	if err != nil {
@@ -200,6 +223,32 @@ func TestShowAllIPsAfterAdding(t *testing.T) {
 		t.Errorf("handler returned without required body: \ngot  %v want %v",
 			rr.Body.String(), ipAddr1)
 	}
+}
+
+func TestDeleteIPNonLocal(t *testing.T) {
+	oldEnv := os.Getenv("env")
+	os.Setenv("env", "staging")
+	req, err := http.NewRequest("DELETE", "/ip/"+ipAddr1, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	router := mux.NewRouter()
+	router.HandleFunc("/ip/{ip}", IPDelete)
+	router.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Check the response body is what we expect.
+	expected := `cannot exec command `
+	if strings.Index(rr.Body.String(), expected) == -1 {
+		t.Errorf("handler returned unexpected body: \ngot %v should have included : %v",
+			rr.Body.String(), expected)
+	}
+	os.Setenv("env", oldEnv)
 }
 
 func TestDeleteIP(t *testing.T) {
