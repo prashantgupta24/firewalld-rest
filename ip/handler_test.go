@@ -1,7 +1,10 @@
 package ip
 
 import (
+	"log"
 	"os"
+	"os/exec"
+	"strings"
 	"testing"
 )
 
@@ -35,21 +38,73 @@ func TestGetHandler(t *testing.T) {
 	}
 }
 
+func TestGetAllIPsFileError(t *testing.T) {
+	changeFilePermission("100")
+	_, err := handler.GetAllIPs()
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
+		t.Errorf("should have received permission error, instead got : %v", err)
+	}
+	changeFilePermission("644")
+}
+
 func TestGetAllIPs(t *testing.T) {
 	ips, err := handler.GetAllIPs()
 	if err != nil {
 		t.Errorf("should not have errored, err : %v", err)
 	}
 	if len(ips) != 0 {
-		t.Errorf("should have been an empty list, instead got : %v", ips)
+		t.Errorf("should have been an empty list, instead got : %v", len(ips))
 	}
 }
 
+func TestAddIPFileError(t *testing.T) {
+	changeFilePermission("500")
+	err := handler.AddIP(ipInstance)
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
+		t.Errorf("should have received permission error, instead got : %v", err)
+	}
+	changeFilePermission("644")
+}
 func TestAddIP(t *testing.T) {
 	err := handler.AddIP(ipInstance)
 	if err != nil {
 		t.Errorf("should not have errored, err : %v", err)
 	}
+}
+
+func TestAddIPDup(t *testing.T) {
+	err := handler.AddIP(ipInstance)
+	if err == nil {
+		t.Errorf("should have errored for duplicate IP")
+	}
+}
+
+func TestGetAllIPsAfterAdd(t *testing.T) {
+	ips, err := handler.GetAllIPs()
+	if err != nil {
+		t.Errorf("should not have errored, err : %v", err)
+	}
+	if len(ips) == 0 {
+		t.Errorf("should have included %v , instead got : %v", ipAddr, ips)
+	}
+}
+
+func TestCheckIPExistsFileError(t *testing.T) {
+	changeFilePermission("100")
+	_, err := handler.CheckIPExists(ipAddr)
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
+		t.Errorf("should have received permission error, instead got : %v", err)
+	}
+	changeFilePermission("644")
 }
 
 func TestCheckIPExists(t *testing.T) {
@@ -62,6 +117,18 @@ func TestCheckIPExists(t *testing.T) {
 	}
 }
 
+func TestGetIPFileError(t *testing.T) {
+	changeFilePermission("100")
+	_, err := handler.GetIP(ipAddr)
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
+		t.Errorf("should have received permission error, instead got : %v", err)
+	}
+	changeFilePermission("644")
+}
+
 func TestGetIP(t *testing.T) {
 	ipRecd, err := handler.GetIP(ipAddr)
 	if err != nil {
@@ -70,6 +137,18 @@ func TestGetIP(t *testing.T) {
 	if ipRecd.IP != ipInstance.IP {
 		t.Errorf("ip should be same, got %v want %v", ipRecd.IP, ipInstance.IP)
 	}
+}
+
+func TestDeleteIPFileError(t *testing.T) {
+	changeFilePermission("100")
+	_, err := handler.DeleteIP(ipAddr)
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
+		t.Errorf("should have received permission error, instead got : %v", err)
+	}
+	changeFilePermission("644")
 }
 
 func TestDeleteIP(t *testing.T) {
@@ -87,4 +166,15 @@ func TestDeleteIP(t *testing.T) {
 	if ipExists {
 		t.Errorf("ip %v should be deleted", ipAddr)
 	}
+}
+
+func changeFilePermission(permission string) {
+	cmd := exec.Command("chmod", permission, "firewalld-rest.db")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("could not change permission of file, err : %v", err)
+	}
+	// cmd1 := exec.Command("ls", "-la")
+	// o1, _ := cmd1.CombinedOutput()
+	// fmt.Println("cmd1 : ", string(o1))
 }
