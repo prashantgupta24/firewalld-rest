@@ -78,6 +78,26 @@ func TestShowAllIPs(t *testing.T) {
 	}
 }
 
+func TestAddBadIP(t *testing.T) {
+	req, err := http.NewRequest("POST", "/ip", strings.NewReader(dataInvalid))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := newRequestRecorder(req, IPAdd)
+
+	if status := rr.Code; status != http.StatusUnprocessableEntity {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// Check the response body is what we expect.
+	expected := `{"error":{"status":422,"title":"Unprocessible Entity"}}`
+	if strings.TrimSpace(rr.Body.String()) != expected {
+		t.Errorf("handler returned unexpected body: \ngot  %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
 func TestAddIPNonLocal(t *testing.T) {
 	oldEnv := os.Getenv("env")
 	os.Setenv("env", "staging")
