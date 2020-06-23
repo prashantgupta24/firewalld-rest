@@ -2,15 +2,15 @@
 
 # Firewalld-rest
 
-A REST service to allow users to dynamically update firewalld rules on a server.
+A REST application to dynamically update firewalld rules on a linux server
 
 ## Purpose
 
-The simple idea behind this repo is to have a secure system, basically a system running `Firewalld` that does not permit SSH access to any IP address by default so there are no brute-force attacks. The only way to access the system is by communicating with a REST server running on the system through a valid request containing your public IP address.
+The simple idea behind this is to have a completely isolated system, a system running Firewalld that does not permit SSH access to any IP address by default so there are no brute-force attacks. The only way to access the system is by communicating with a REST application running on the server through a valid request containing your public IP address.
 
-The REST server validates your request (it checks for a valid JWT, covered later), and if the request is valid, it will add your IP to the `firewalld` rule for the `public` zone for SSH, which gives **only your IP** SSH access to the machine.
+The REST application validates your request (it checks for a valid JWT, covered later), and if the request is valid, it will add your IP to the firewalld rule for the public zone for SSH, which gives **only your IP** SSH access to the machine.
 
-Once you are done using the machine, you can remove your IP using the same REST server, and the server shuts SSH access off again.
+Once you are done using the machine, you can remove your IP interacting with the same REST application, and it changes rules in firewalld, shutting off SSH access and isolating the system again.
 
 ## Table of Contents
 
@@ -115,7 +115,7 @@ The test can be run using `make test`. The emphasis has been given to testing th
 
 Update the file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own `public cert` for which you have the private key.
 
-If you want to create a new set, see the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then after updating the file above, you can go to `jwt.io` and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST server, so keep the JWT safe.
+If you want to create a new set, see the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then after updating the file above, you can go to `jwt.io` and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST application, so keep the JWT safe.
 
 ### 3.2 Build the application
 
@@ -167,9 +167,9 @@ _Notice the `ssh` service will not be listed in public zone anymore._
 
 Also try SSH access into the server from another terminal. It should reject the attempt.
 
-### 3.5 Expose the REST server
+### 3.5 Expose the REST application
 
-The REST server can be exposed in a number of different ways, I have 2 examples on how it can be exposed:
+The REST application can be exposed in a number of different ways, I have 2 examples on how it can be exposed:
 
 1. Using a `NodePort` kubernetes service ([link](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc-nodeport.yaml))
 2. Using `ingress` along with a kubernetes service ([link](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/ingress.yaml))
@@ -215,7 +215,7 @@ type IP struct {
 }
 ```
 
-### 3.9 Interacting with the REST server
+### 3.9 Interacting with the REST application
 
 #### 3.9.1 Index page
 
