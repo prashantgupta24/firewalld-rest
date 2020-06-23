@@ -61,8 +61,17 @@ func TestGetAllIPs(t *testing.T) {
 }
 
 func TestAddIPFileError(t *testing.T) {
-	changeFilePermission("500")
+	changeFilePermission("100")
 	err := handler.AddIP(ipInstance)
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
+		t.Errorf("should have received permission error, instead got : %v", err)
+	}
+
+	changeFilePermission("500")
+	err = handler.AddIP(ipInstance)
 	if err == nil {
 		t.Errorf("should have errored")
 	}
@@ -129,6 +138,16 @@ func TestGetIPFileError(t *testing.T) {
 	changeFilePermission("644")
 }
 
+func TestGetInvalidIP(t *testing.T) {
+	_, err := handler.GetIP("invalid_ip")
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && err.Error() != "record not found" {
+		t.Errorf("record should not have been found, instead got : %v", err)
+	}
+}
+
 func TestGetIP(t *testing.T) {
 	ipRecd, err := handler.GetIP(ipAddr)
 	if err != nil {
@@ -148,7 +167,26 @@ func TestDeleteIPFileError(t *testing.T) {
 	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
 		t.Errorf("should have received permission error, instead got : %v", err)
 	}
+
+	changeFilePermission("500")
+	_, err = handler.DeleteIP(ipAddr)
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && strings.Index(err.Error(), "permission denied") == -1 {
+		t.Errorf("should have received permission error, instead got : %v", err)
+	}
 	changeFilePermission("644")
+}
+
+func TestDeleteInvalidIP(t *testing.T) {
+	_, err := handler.DeleteIP("invalid_ip")
+	if err == nil {
+		t.Errorf("should have errored")
+	}
+	if err != nil && err.Error() != "record not found" {
+		t.Errorf("record should not have been found, instead got : %v", err)
+	}
 }
 
 func TestDeleteIP(t *testing.T) {
