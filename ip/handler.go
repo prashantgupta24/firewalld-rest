@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/firewalld-rest/db"
+	"github.com/prashantgupta24/firewalld-rest/db"
 )
 
 var once sync.Once

@@ -1,4 +1,4 @@
-module github.com/firewalld-rest
+module github.com/prashantgupta24/firewalld-rest
 
 go 1.14
 
