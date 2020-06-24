@@ -24,16 +24,15 @@ Once you are done using the machine, you can remove your IP interacting with the
 - [2. About the application](#2-about-the-application)
   - [2.1 Authorization](#21-authorization)
   - [2.2 DB](#22-db)
-  - [2.3 Routing](#23-routing)
-    - [2.3.1 Single node cluster](#231-single-node-cluster)
-    - [2.3.2 Multi-node cluster](#232-multi-node-cluster)
-  - [2.4 Tests](#24-tests)
+  - [2.3 Tests](#23-tests)
 - [3. How to install and use on server](#3-how-to-install-and-use-on-server)
   - [3.1 Generate JWT](#31-generate-jwt)
   - [3.2 Build the application](#32-build-the-application)
   - [3.3 Copy binary file over to server](#33-copy-binary-file-over-to-server)
   - [3.4 Remove SSH from public firewalld zone](#34-remove-ssh-from-public-firewalld-zone)
   - [3.5 Expose the REST application](#35-expose-the-rest-application)
+    - [3.5.1 Single node cluster](#351-single-node-cluster)
+    - [3.5.2 Multi-node cluster](#352-multi-node-cluster)
   - [3.6 Configure linux systemd service](#36-configure-linux-systemd-service)
   - [3.7 Start and enable systemd service.](#37-start-and-enable-systemd-service)
   - [3.8 IP JSON](#38-ip-json)
@@ -75,37 +74,7 @@ The public certificate is in this file [publicCert.go](https://github.com/prasha
 
 The application uses a file DB for now. The architecture allows easy integration of any other type of DB. The interface in `db.go` is what is required to be fulfilled to introduce a new type of DB.
 
-### 2.3 Routing
-
-#### 2.3.1 Single node cluster
-
-For a single-node cluster, see the kubernetes service example [here](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc-nodeport.yaml). The important thing to note is that we manually add the `Endpoints` resource for the service, which points to our node's private IP address and port `8080`.
-
-Once deployed, your service might look like this:
-
-```
-kubernetes get svc
-
-external-rest | NodePort | 10.xx.xx.xx | 169.xx.xx.xx | 8080:31519/TCP
-```
-
-Now, you can interact with the application on:
-
-> 169.xx.xx.xx:31519/m1/
-
-_Note: Since there's only 1 node in the cluster, you will only ever use `/m1`. For more than 1 node, see the next section._
-
-#### 2.3.2 Multi-node cluster
-
-For a multi-node cluster, an ingress resource would be highly beneficial.
-
-The **first** step would be to create the kubernetes service in each individual node, using the example [here](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc.yaml). The important thing to note is that we manually add the `Endpoints` resource for the service, which points to our node's private IP address and port `8080`.
-
-The **second** step is the [ingress](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/ingress.yaml) resource. It redirects different routes to different nodes in the cluster. For example, in the ingress file above,
-
-A request to `/m1` will be redirected to the `first` node, a request to `/m2` will be redirected to the `second` node, and so on. This will let you control each node's individual SSH access through a single endpoint.
-
-### 2.4 Tests
+### 2.3 Tests
 
 The test can be run using `make test`. The emphasis has been given to testing the handler functions and making sure that IPs get added and removed successfully from the DB. I still have to figure out how to actually automate the tests for the firewalld rules (contributions are welcome!)
 
@@ -173,6 +142,34 @@ The REST application can be exposed in a number of different ways, I have 2 exam
 
 1. Using a `NodePort` kubernetes service ([link](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc-nodeport.yaml))
 2. Using `ingress` along with a kubernetes service ([link](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/ingress.yaml))
+
+#### 3.5.1 Single node cluster
+
+For a single-node cluster, see the kubernetes service example [here](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc-nodeport.yaml). The important thing to note is that we manually add the `Endpoints` resource for the service, which points to our node's private IP address and port `8080`.
+
+Once deployed, your service might look like this:
+
+```
+kubernetes get svc
+
+external-rest | NodePort | 10.xx.xx.xx | 169.xx.xx.xx | 8080:31519/TCP
+```
+
+Now, you can interact with the application on:
+
+> 169.xx.xx.xx:31519/m1/
+
+_Note: Since there's only 1 node in the cluster, you will only ever use `/m1`. For more than 1 node, see the next section._
+
+#### 3.5.2 Multi-node cluster
+
+For a multi-node cluster, an ingress resource would be highly beneficial.
+
+The **first** step would be to create the kubernetes service in each individual node, using the example [here](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/svc.yaml). The important thing to note is that we manually add the `Endpoints` resource for the service, which points to our node's private IP address and port `8080`.
+
+The **second** step is the [ingress](https://github.com/prashantgupta24/firewalld-rest/blob/master/k8s/ingress.yaml) resource. It redirects different routes to different nodes in the cluster. For example, in the ingress file above,
+
+A request to `/m1` will be redirected to the `first` node, a request to `/m2` will be redirected to the `second` node, and so on. This will let you control each node's individual SSH access through a single endpoint.
 
 ### 3.6 Configure linux systemd service
 
