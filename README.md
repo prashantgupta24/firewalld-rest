@@ -58,7 +58,7 @@ Once you are done using the machine, you can remove your IP interacting with the
 This repo assumes you have:
 
 1. A linux server with `firewalld` installed.
-1. `root` access to the machine. (without `root` access, the application will not be able to run the `firewall-cmd` commands needed to add the rule for SSH access)
+1. `root` access to the server. (without `root` access, the application will not be able to run the `firewall-cmd` commands needed to add the rule for SSH access)
 1. Some way of exposing the application externally (there are examples in this repo on how to use Kubernetes to expose the service)
 
 ## 2. About the application
