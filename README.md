@@ -115,7 +115,7 @@ The test can be run using `make test`. The emphasis has been given to testing th
 
 Update the file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go) with your own `public cert` for which you have the private key.
 
-If you want to create a new set, see the section on [generating your own public/private key](#commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then after updating the file above, you can go to `jwt.io` and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST application, so keep the JWT safe.
+If you want to create a new set, see the section on [generating your own public/private key](#5-commands-for-generating-publicprivate-key). Once you have your own public and private key pair, then after updating the file above, you can go to `jwt.io` and generate a valid JWT using `RS256 algorithm` (the payload doesn't matter). You will be using that JWT to make calls to the REST application, so keep the JWT safe.
 
 ### 3.2 Build the application
 
