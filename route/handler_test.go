@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/firewalld-rest/ip"
 	"github.com/gorilla/mux"
+	"github.com/prashantgupta24/firewalld-rest/ip"
 )
 
 var data1 string

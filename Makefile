@@ -24,9 +24,9 @@ start-local: clean-db
 start-server:
 	go run cmd/main.go
 build-linux: # example: make build-linux DB_PATH=/dir/to/db
-	env GOOS=linux GOARCH=amd64 go build -ldflags "-X github.com/firewalld-rest/db.pathFromEnv=$(DB_PATH)" -o build/firewalld-rest cmd/main.go
+	env GOOS=linux GOARCH=amd64 go build -ldflags "-X github.com/prashantgupta24/firewalld-rest/db.pathFromEnv=$(DB_PATH)" -o build/firewalld-rest cmd/main.go
 local-build:
-	go build -ldflags "-X github.com/firewalld-rest/db.pathFromEnv=$(DB_PATH)" -o build/firewalld-rest cmd/main.go
+	go build -ldflags "-X github.com/prashantgupta24/firewalld-rest/db.pathFromEnv=$(DB_PATH)" -o build/firewalld-rest cmd/main.go
 copy: build-linux
 	scp build/firewalld-rest root@<server>:/root/rest
 clean-db:

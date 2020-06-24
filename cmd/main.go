@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/firewalld-rest/route"
+	"github.com/prashantgupta24/firewalld-rest/route"
 )
 
 func main() {

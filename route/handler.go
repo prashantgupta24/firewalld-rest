@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/firewalld-rest/firewallcmd"
-	"github.com/firewalld-rest/ip"
 	"github.com/gorilla/mux"
+	"github.com/prashantgupta24/firewalld-rest/firewallcmd"
+	"github.com/prashantgupta24/firewalld-rest/ip"
 )
 
 //Index page
