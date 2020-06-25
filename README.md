@@ -22,9 +22,10 @@ Once you are done using the machine, you can remove your IP interacting with the
 - [Table of Contents](#table-of-contents)
 - [1. Pre-requisites](#1-pre-requisites)
 - [2. About the application](#2-about-the-application)
-  - [2.1 Authorization](#21-authorization)
-  - [2.2 DB](#22-db)
-  - [2.3 Tests](#23-tests)
+  - [2.1 Firewall-cmd](#21-firewall-cmd)
+  - [2.2 Database](#22-database)
+  - [2.3 Authorization](#23-authorization)
+  - [2.4 Tests](#24-tests)
 - [3. How to install and use on server](#3-how-to-install-and-use-on-server)
   - [3.1 Generate JWT](#31-generate-jwt)
   - [3.2 Build the application](#32-build-the-application)
@@ -62,7 +63,24 @@ This repo assumes you have:
 
 ## 2. About the application
 
-### 2.1 Authorization
+### 2.1 Firewall-cmd
+
+Firewall-cmd is the command line client of the firewalld daemon. Through this, the REST application adds the rule specific to the IP address sent in the request.
+
+The syntax of adding a rule for an IP address is:
+`firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.xx.xx.xx/32" port protocol="tcp" port="22" accept'`
+
+Once the rule for the IP address has been added, the IP address is stored in a database (covered next). The database is just to keep track of all IPs that have rules created for them.
+
+### 2.2 Database
+
+The database for the application stores the list of IP addresses that have rules created for them which allow SSH access for those IPs. Once you interact with the REST application and the application creates a firewalld rule specific to your IP address, then your IP address is stored in the database. It is important that the database is maintained during server restarts, otherwise there may be discrepancy between the IP addresses having firewalld rules and IP addresses stored in the database.
+
+> Note: Having an IP in the database does not mean that IP address will be given SSH access. The database is just a way to reference all the IPs with rules created in firewalld.
+
+The application uses a file type database for now. The architecture of the code allows easy integration of any other type of databases. The interface in db.go is what is required to be fulfilled to introduce a new type of database.
+
+### 2.3 Authorization
 
 The application uses `RS256` type algorithm to verify the incoming requests.
 
@@ -70,13 +88,9 @@ The application uses `RS256` type algorithm to verify the incoming requests.
 
 The public certificate is in this file [publicCert.go](https://github.com/prashantgupta24/firewalld-rest/blob/master/route/publicCert.go), which is something that will have to be changed before you can use it. (more information on how to create a new one later).
 
-### 2.2 DB
+### 2.4 Tests
 
-The application uses a file DB for now. The architecture allows easy integration of any other type of DB. The interface in `db.go` is what is required to be fulfilled to introduce a new type of DB.
-
-### 2.3 Tests
-
-The test can be run using `make test`. The emphasis has been given to testing the handler functions and making sure that IPs get added and removed successfully from the DB. I still have to figure out how to actually automate the tests for the firewalld rules (contributions are welcome!)
+The tests can be run using `make test`. The emphasis has been given to testing the handler functions and making sure that IPs get added and removed successfully from the database. I still have to figure out how to actually automate the tests for the firewalld rules (contributions are welcome!)
 
 ## 3. How to install and use on server
 
