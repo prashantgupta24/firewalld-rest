@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/prashantgupta24/firewalld-rest)](https://goreportcard.com/report/github.com/prashantgupta24/firewalld-rest) [![codecov](https://codecov.io/gh/prashantgupta24/firewalld-rest/branch/master/graph/badge.svg)](https://codecov.io/gh/prashantgupta24/firewalld-rest) [![version][version-badge]][releases]
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go) [![Go Report Card](https://goreportcard.com/badge/github.com/prashantgupta24/firewalld-rest)](https://goreportcard.com/report/github.com/prashantgupta24/firewalld-rest) [![codecov](https://codecov.io/gh/prashantgupta24/firewalld-rest/branch/master/graph/badge.svg)](https://codecov.io/gh/prashantgupta24/firewalld-rest) [![version][version-badge]][releases]
 
 # Firewalld-rest
 
