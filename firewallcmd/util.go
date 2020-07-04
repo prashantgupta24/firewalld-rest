@@ -24,7 +24,7 @@ func EnableRichRuleForIP(ipAddr string) (string, error) {
 	if err2 != nil {
 		return cmd2.String(), err2
 	}
-	fmt.Printf("firewalld reloaded succesfully : %v", string(output2))
+	fmt.Printf("firewalld reloaded successfully : %v", string(output2))
 	return "", nil
 }
 
@@ -41,7 +41,7 @@ func DisableRichRuleForIP(ipAddr string) (string, error) {
 	if err2 != nil {
 		return cmd2.String(), err2
 	}
-	fmt.Printf("firewalld reloaded succesfully : %v", string(output2))
+	fmt.Printf("firewalld reloaded successfully : %v", string(output2))
 	return "", nil
 }
 
