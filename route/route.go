@@ -21,7 +21,7 @@ func NewRouter() *mux.Router {
 	router := mux.NewRouter()
 	subrouter := router.PathPrefix("/m{[0-9]+}").Subrouter().StrictSlash(true)
 
-	router.Use(loggingMiddleware, validateMiddleware)
+	subrouter.Use(loggingMiddleware, validateMiddleware)
 	for _, route := range routesForApp {
 		subrouter.
 			Methods(route.Method).
