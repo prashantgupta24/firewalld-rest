@@ -2,7 +2,9 @@
 
 # Firewalld-rest
 
-A REST application to dynamically update firewalld rules on a linux server
+A REST application to dynamically update firewalld rules on a linux server.
+
+Firewalld is a firewall management tool for Linux operating systems.
 
 ## Purpose
 
