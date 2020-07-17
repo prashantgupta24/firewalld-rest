@@ -4,15 +4,33 @@
 
 A REST application to dynamically update firewalld rules on a linux server.
 
-Firewalld is a firewall management tool for Linux operating systems.
+_Firewalld is a firewall management tool for Linux operating systems._
 
 ## Purpose
+
+If you have seen this message when you log into your linux server:
+
+```
+There were 534 failed login attempts since the last successful login.
+```
+
+Then this idea is for **you**.
 
 The simple idea behind this is to have a completely isolated system, a system running Firewalld that does not permit SSH access to any IP address by default so there are no brute-force attacks. The only way to access the system is by communicating with a REST application running on the server through a valid request containing your public IP address.
 
 The REST application validates your request (it checks for a valid JWT, covered later), and if the request is valid, it will add your IP to the firewalld rule for the public zone for SSH, which gives **only your IP** SSH access to the machine.
 
 Once you are done using the machine, you can remove your IP interacting with the same REST application, and it changes rules in firewalld, shutting off SSH access and isolating the system again.
+
+## Layman's explanation
+
+Imagine the server being your house, and the SSH password as a lock on the main door of your house. Only you have the key to open the lock and enter your house, but you cannot prevent anyone walking in front of your house to see the lock, neither can you prevent someone to try a brute force method to open the lock by using randomly generated keys (hence the numerous failed login attempts that you see).
+
+By using the approach presented in this repo, you are adding a gate in front of your house (namely _firewalld_). The gate prevents bad folks from getting too close to the house, so that they cannot even look at the lock to try randomly generated keys. And the REST application is the only way to open or close that gate. Also, to communicate with this REST application, you need to possess a certain key (an **RS256** type, covered later), without which you cannot even talk to it (Good luck brute forcing that).
+
+So, in short, you need to possess a key to talk to the REST application, which opens the gate for you to access the lock. After that, you use your key to open the lock and get into your house.
+
+Safe and secure.
 
 ## Table of Contents
 
@@ -21,6 +39,7 @@ Once you are done using the machine, you can remove your IP interacting with the
 <!-- code_chunk_output -->
 
 - [Purpose](#purpose)
+- [Layman's explanation](#laymans-explanation)
 - [Table of Contents](#table-of-contents)
 - [1. Pre-requisites](#1-pre-requisites)
 - [2. About the application](#2-about-the-application)
@@ -52,6 +71,7 @@ Once you are done using the machine, you can remove your IP interacting with the
       - [Sample query](#sample-query-4)
 - [4. Helpful tips/links](#4-helpful-tipslinks)
 - [5. Commands for generating public/private key](#5-commands-for-generating-publicprivate-key)
+- [6. Possible enhancements](#6-possible-enhancements)
 
 <!-- /code_chunk_output -->
 
@@ -392,3 +412,7 @@ openssl req -new -x509 -key private-key-sc.pem -out public.cert
 
 [version-badge]: https://img.shields.io/github/v/release/prashantgupta24/firewalld-rest
 [releases]: https://github.com/prashantgupta24/firewalld-rest/releases
+
+## 6. Possible enhancements
+
+- Rate limiting the number of requests that can be made to the application
