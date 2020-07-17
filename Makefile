@@ -19,7 +19,7 @@ $(COVER_PROFILE):
 
 vet:
 	go vet ./...
-start-local: clean-db
+start-local: clean-db #for testing on your local system without firewalld
 	env=local go run cmd/main.go
 start-server:
 	go run cmd/main.go
