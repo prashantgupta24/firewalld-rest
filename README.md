@@ -44,7 +44,7 @@ It is proactive - It doesn't allow anyone to try and login to the server in the 
 | `fail2ban`                                                                                                                               | `firewalld-rest `                                                                                                                                                    |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `dynamically` alters firewall rules to ban IP addresses that have unsuccessfully attempted to log into server a certain number of times. | provides REST interface to `manually` alter firewall rules to allow ONLY your IP to try and log into server. No IP apart from yours can even try to login to server. |
-| `Reactive` - it alters firewall rules _after_ unsuccessfully attempts                                                                    | `Proactive` - you alter firewall rules `before` trying to log into server                                                                                            |
+| `Reactive` - it alters firewall rules _after_ unsuccessfully attempts                                                                    | `Proactive` - you alter firewall rules _before_ trying to log into server                                                                                            |
 
 > Note: I am not saying one approach is better than the other. They are just different approaches to the same problem.
 
