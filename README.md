@@ -33,7 +33,7 @@ Firewalld-rest is more of a proactive approach. Let me explain.
 By using the approach presented in this repo, you still add a guard (aka firewall) like you did for fail2ban in front of your locked building (aka the server). But there are 2 main differences here:
 
 1. This guard is told to not let **anyone** come near the building by default, so that no one is ever close enough to the lock to try their keys. (This means that the default firewall rules are set up by default in such a way so that no one can even try to SSH to the server).
-2. You can talk to the guard (aka firewall) using this repo, and convince the guard to allow you near the building, provided you possess a certain key (an **RS256** type, covered later). (This means that using the REST interface provided by this repo, you can manually alter firewall rules to allow ONLY your IP to try and log in to the server)
+2. You can talk to the guard (aka firewall) using this repo, and convince the guard to allow you near the building, provided you possess a certain key (an **RS256** type, covered later). (This means that using the REST interface provided by this repo, you proactively alter firewall rules to allow ONLY your IP to try and log in to the server)
 
 `Note`: Once you are allowed through by the firewall, you still need to have the key to login to the server.
 
@@ -41,9 +41,10 @@ It is proactive - It doesn't allow anyone to try and login to the server in the 
 
 **TL;DR**
 
-| `fail2ban`                                                                                                                                  | `firewalld-rest  `                                                                                                                                                    |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fail2ban`                                                                                                                               | `firewalld-rest `                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `dynamically` alters firewall rules to ban IP addresses that have unsuccessfully attempted to log into server a certain number of times. | provides REST interface to `manually` alter firewall rules to allow ONLY your IP to try and log into server. No IP apart from yours can even try to login to server. |
+| `Reactive` - it alters firewall rules _after_ unsuccessfully attempts                                                                    | `Proactive` - you alter firewall rules `before` trying to log into server                                                                                            |
 
 > Note: I am not saying one approach is better than the other. They are just different approaches to the same problem.
 
