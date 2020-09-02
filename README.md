@@ -41,7 +41,7 @@ It is proactive - It doesn't allow anyone to try and login to the server in the 
 
 **TL;DR**
 
-| fail2ban                                                                                                                                  | `firewalld-rest                                                                                                                                                      |
+| `fail2ban`                                                                                                                                  | `firewalld-rest  `                                                                                                                                                    |
 | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `dynamically` alters firewall rules to ban IP addresses that have unsuccessfully attempted to log in to server a certain number of times. | provides REST interface to `manually` alter firewall rules to allow ONLY your IP to try and log into server. No IP apart from yours can even try to login to server. |
 
