@@ -24,21 +24,26 @@ Once you are done using the machine, you can remove your IP interacting with the
 
 ## Comparison with fail2ban
 
-This repo takes a proactive approach rather than a reactive approach taken by `fail2ban`. `fail2ban` dynamically alters the firewall rules to ban addresses that have unsuccessfully attempted to log in a certain number of times. It is reactive - it allows people to try and login to the server, but bans those who are unsuccessful in doing so after a certain number of times. It is like appointing a guard (aka firewall) outside a locked building who checks for suspicious activity and the guard is told by `fail2ban` to ban anyone who tries to open the lock unsuccessfully many times. 
+This repo takes a proactive approach rather than a reactive approach taken by `fail2ban`. `fail2ban` dynamically alters the firewall rules to ban addresses that have unsuccessfully attempted to log in a certain number of times. It is reactive - it allows people to try and login to the server, but bans those who are unsuccessful in doing so after a certain number of times. It is like appointing a guard (aka firewall) outside a locked building who checks for suspicious activity and the guard is told by `fail2ban` to ban anyone who tries to open the lock unsuccessfully many times.
 
 Firewalld-rest is more of a proactive approach. Let me explain.
 
-## Proactive approach
+### Proactive approach
 
-By using the approach presented in this repo, you still add a guard (aka firewall) like you did for fail2ban in front of your locked building (aka the server). But the difference is that this guard is told to not let **anyone** come near the building by default, so that no one is ever close enough to the lock to try their keys. You can talk to the guard (firewall) and convince the guard to allow you near the building, provided you possess a certain key (an **RS256** type, covered later). This repo (firewalld-rest) is the service that allows you to talk to the guard (firewall).
+By using the approach presented in this repo, you still add a guard (aka firewall) like you did for fail2ban in front of your locked building (aka the server). But there are 2 main differences here:
 
-**In short:**
+1. This guard is told to not let **anyone** come near the building by default, so that no one is ever close enough to the lock to try their keys. (This means that the default firewall rules are set up by default in such a way so that no one can even try to SSH to the server).
+2. You can talk to the guard (aka firewall) using this repo, and convince the guard to allow you near the building, provided you possess a certain key (an **RS256** type, covered later). (This means that using the REST interface provided by this repo, you can manually alter firewall rules to allow ONLY your IP to try and log in to the server)
 
-`fail2ban` dynamically alters the firewall rules to ban addresses that have unsuccessfully attempted to log in to the server a certain number of times.
-
-`firewalld-rest` provides a REST interface that lets you manually alter the firewall rules to allow ONLY your IP to try and log into the server. No IP apart from yours can even try to login to the server.
+`Note`: Once you are allowed through by the firewall, you still need to have the key to login to the server.
 
 It is proactive - It doesn't allow anyone to try and login to the server in the first place.
+
+**TL;DR**
+
+| fail2ban                                                                                                                                  | `firewalld-rest                                                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dynamically` alters firewall rules to ban IP addresses that have unsuccessfully attempted to log in to server a certain number of times. | provides REST interface to `manually` alter firewall rules to allow ONLY your IP to try and log into server. No IP apart from yours can even try to login to server. |
 
 > Note: I am not saying one approach is better than the other. They are just different approaches to the same problem.
 
@@ -50,7 +55,7 @@ It is proactive - It doesn't allow anyone to try and login to the server in the 
 
 - [Purpose](#purpose)
 - [Comparison with fail2ban](#comparison-with-fail2ban)
-- [Proactive approach](#proactive-approach)
+  - [Proactive approach](#proactive-approach)
 - [Table of Contents](#table-of-contents)
 - [1. Pre-requisites](#1-pre-requisites)
 - [2. About the application](#2-about-the-application)
