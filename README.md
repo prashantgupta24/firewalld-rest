@@ -24,7 +24,7 @@ Once you are done using the machine, you can remove your IP interacting with the
 
 ## Comparison with fail2ban
 
-This repo takes a proactive approach rather than a reactive approach taken by `fail2ban`. `fail2ban` is a very popular reactive framework, in which it dynamically alters the firewall rules to ban addresses that have unsuccessfully attempted to log in a certain number of times. It is like appointing a guard outside a building who checks for suspicious activity and bans anyone who tries to unsuccessfully open the lock many times. It is reactive - it allows people to try and open the lock, and only bans those who are unsuccessful in opening it a certain number of times.
+This repo takes a proactive approach rather than a reactive approach taken by `fail2ban`. `fail2ban` dynamically alters the firewall rules to ban addresses that have unsuccessfully attempted to log in a certain number of times. It is reactive - it allows people to try and open the lock, and bans those who are unsuccessful in opening it a certain number of times. It is like appointing a guard outside a building who checks for suspicious activity and bans anyone who tries to open the lock unsuccessfully many times. 
 
 Firewalld-rest is more of a proactive approach. Let me explain.
 
@@ -39,6 +39,8 @@ So, in short, you need to possess an RS256 key to talk to the REST application, 
 No need for a guard (aka fail2ban).
 
 Safe and secure.
+
+> Note: I am not saying one approach is better than the other. They are just different approaches to the same problem.
 
 ## Table of Contents
 
