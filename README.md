@@ -22,13 +22,21 @@ The REST application validates your request (it checks for a valid JWT, covered 
 
 Once you are done using the machine, you can remove your IP interacting with the same REST application, and it changes rules in firewalld, shutting off SSH access and isolating the system again.
 
-## Layman's explanation
+## Comparison with fail2ban
 
-Imagine the server being your house, and the SSH password as a lock on the main door of your house. Only you have the key to open the lock and enter your house, but you cannot prevent anyone walking in front of your house to see the lock, neither can you prevent someone to try a brute force method to open the lock by using randomly generated keys (hence the numerous failed login attempts that you see).
+This repo takes a proactive approach rather than a reactive approach taken by `fail2ban`. `fail2ban` is a very popular reactive framework, in which it dynamically alters the firewall rules to ban addresses that have unsuccessfully attempted to log in a certain number of times. It is like appointing a guard outside a building who checks for suspicious activity and bans anyone who tries to unsuccessfully open the lock many times. It is reactive - it allows people to try and open the lock, and only bans those who are unsuccessful in opening it a certain number of times.
 
-By using the approach presented in this repo, you are adding a gate in front of your house (namely _firewalld_). The gate prevents bad folks from getting too close to the house, so that they cannot even look at the lock to try randomly generated keys. And the REST application is the only way to open or close that gate. Also, to communicate with this REST application, you need to possess a certain key (an **RS256** type, covered later), without which you cannot even talk to it (Good luck brute forcing that).
+Firewalld-rest is more of a proactive approach. Let me explain.
 
-So, in short, you need to possess a key to talk to the REST application, which opens the gate for you to access the lock. After that, you use your key to open the lock and get into your house.
+## Proactive approach
+
+Imagine the server being a building, and the SSH password as a lock on the main door of the building. You have the key to open the lock and enter the building, but you cannot prevent anyone walking in front of the building to see the lock, neither can you prevent someone to try a brute force method to open the lock by using randomly generated keys (hence the numerous failed login attempts that you see).
+
+By using the approach presented in this repo, you are adding a gate in front of your house. This gate prevents bad folks from getting too close to the house, so that they are not close enough to the lock to try randomly generated keys. The REST application is the only way to open or close that gate, and unless you open the gate, you don't interact with the lock. Also, to communicate with this REST application, you need to possess a certain key (an **RS256** type, covered later), without which you cannot even talk to it (Good luck brute forcing that).
+
+So, in short, you need to possess an RS256 key to talk to the REST application, which opens the gate for you to access the lock. After that, you use your key to open the lock and get into the building.
+
+No need for a guard (aka fail2ban).
 
 Safe and secure.
 
@@ -39,7 +47,8 @@ Safe and secure.
 <!-- code_chunk_output -->
 
 - [Purpose](#purpose)
-- [Layman's explanation](#laymans-explanation)
+- [Comparison with fail2ban](#comparison-with-fail2ban)
+- [Proactive approach](#proactive-approach)
 - [Table of Contents](#table-of-contents)
 - [1. Pre-requisites](#1-pre-requisites)
 - [2. About the application](#2-about-the-application)
