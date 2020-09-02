@@ -37,7 +37,7 @@ By using the approach presented in this repo, you still add a guard (aka firewal
 
 `Note`: Once you are allowed through by the firewall, you still need to have the key to login to the server.
 
-It is proactive - It doesn't allow anyone to try and login to the server in the first place.
+> It is proactive - You proactively talk to the REST interface and alter the firewall rules to allow your IP to try and login.
 
 **TL;DR**
 
