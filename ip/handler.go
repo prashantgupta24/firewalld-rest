@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/prashantgupta24/firewalld-rest/db"
+	"github.com/prashantgupta24/firewalld-rest/firewallcmd"
 )
 
 var once sync.Once
@@ -64,12 +65,20 @@ func (handler *handlerStruct) GetIP(ipAddr string) (*Instance, error) {
 //GetAllIPs from the db
 func (handler *handlerStruct) GetAllIPs() ([]*Instance, error) {
 	ips := []*Instance{}
-	ipStore, err := handler.loadIPStore()
+	// ipStore, err := handler.loadIPStore()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	ipString, err := firewallcmd.GetIPSInFirewall()
 	if err != nil {
 		return nil, err
 	}
-	for _, ip := range ipStore {
-		ips = append(ips, ip)
+	for _, ipAddr := range ipString {
+		ipInstance := &Instance{
+			IP: ipAddr,
+		}
+		ips = append(ips, ipInstance)
 	}
 	return ips, nil
 }
