@@ -17,7 +17,7 @@ func EnableRichRuleForIP(ipAddr string) (string, error) {
 	if !isValidIpv4(ipAddr) {
 		return "", fmt.Errorf("not a valid IPv4 address : %v", ipAddr)
 	}
-	cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--add-rich-rule=rule family="ipv4" source address="`+ipAddr+`/32" port protocol="tcp" port="22" accept`)
+	cmd1 := exec.Command(`firewall-cmd`, `--permanent`, "--zone=public", `--add-rich-rule=`+createRichRule(ipAddr))
 	//uncomment for debugging
 	// for _, v := range cmd1.Args {
 	// 	fmt.Println(v)
@@ -61,7 +61,7 @@ func reload() (*exec.Cmd, []byte, error) {
 }
 
 //GetIPSInFirewall gets IPs currently in firewall
-func GetIPSInFirewall() ([]string, error) {
+func GetIPSInFirewallRule() ([]string, error) {
 
 	var ipsInFirewall []string
 	cmd := exec.Command("firewall-cmd", "--zone=public", "--list-rich-rules")
@@ -84,6 +84,26 @@ func GetIPSInFirewall() ([]string, error) {
 	return ipsInFirewall, err
 }
 
+//CheckIPExistsInFirewallRule checks if rich rule exists with IP
+func CheckIPExistsInFirewallRule(ipAddr string) (bool, error) {
+	cmd := exec.Command(`firewall-cmd`, "--zone=public", `--query-rich-rule=`+createRichRule(ipAddr))
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return false, err
+	}
+	strOutput := string(output)
+	if strOutput == "yes" {
+		return true, nil
+	} else if strOutput == "no" {
+		return false, nil
+	}
+	return false, nil
+}
+
+func createRichRule(ipAddr string) string {
+	richRule := `rule family="ipv4" source address="` + ipAddr + `/32" port protocol="tcp" port="22" accept`
+	return richRule
+}
 func isValidIpv4(host string) bool {
 	return net.ParseIP(host) != nil
 }

@@ -65,12 +65,8 @@ func (handler *handlerStruct) GetIP(ipAddr string) (*Instance, error) {
 //GetAllIPs from the db
 func (handler *handlerStruct) GetAllIPs() ([]*Instance, error) {
 	ips := []*Instance{}
-	// ipStore, err := handler.loadIPStore()
-	// if err != nil {
-	// 	return nil, err
-	// }
 
-	ipString, err := firewallcmd.GetIPSInFirewall()
+	ipString, err := firewallcmd.GetIPSInFirewallRule()
 	if err != nil {
 		return nil, err
 	}
@@ -85,12 +81,11 @@ func (handler *handlerStruct) GetAllIPs() ([]*Instance, error) {
 
 //CheckIPExists checks if IP is in db
 func (handler *handlerStruct) CheckIPExists(ipAddr string) (bool, error) {
-	ipStore, err := handler.loadIPStore()
+	exists, err := firewallcmd.CheckIPExistsInFirewallRule(ipAddr)
 	if err != nil {
 		return false, err
 	}
-	_, ok := ipStore[ipAddr]
-	if ok {
+	if exists {
 		return true, nil
 	}
 	return false, nil
