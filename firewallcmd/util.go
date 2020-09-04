@@ -91,7 +91,7 @@ func CheckIPExistsInFirewallRule(ipAddr string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	strOutput := string(output)
+	strOutput := strings.TrimSpace(string(output))
 	if strOutput == "yes" {
 		return true, nil
 	} else if strOutput == "no" {
