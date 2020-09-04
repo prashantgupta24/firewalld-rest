@@ -11,6 +11,6 @@ type Handler interface {
 	GetIP(string) (*Instance, error)
 	GetAllIPs() ([]*Instance, error)
 	CheckIPExists(ipAddr string) (bool, error)
-	AddIP(ip *Instance) error
-	DeleteIP(ipAddr string) (*Instance, error)
+	AddIP(ip *Instance) (string, error)
+	DeleteIP(ipAddr string) (*Instance, string, error)
 }

@@ -7,10 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/prashantgupta24/firewalld-rest/firewallcmd"
 	"github.com/prashantgupta24/firewalld-rest/ip"
 )
 
@@ -38,18 +36,9 @@ func IPAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	env := os.Getenv("env")
-	if env != "local" {
-		command, err := firewallcmd.EnableRichRuleForIP(ipInstance.IP)
-		if err != nil {
-			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command, err.Error()))
-			return
-		}
-	}
-
-	err = ip.GetHandler().AddIP(ipInstance)
+	command, err := ip.GetHandler().AddIP(ipInstance)
 	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, err.Error())
+		writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command, err.Error()))
 		return
 	}
 
@@ -98,19 +87,10 @@ func IPDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	env := os.Getenv("env")
-	if env != "local" {
-		command, err := firewallcmd.DisableRichRuleForIP(ipAddr)
-		if err != nil {
-			writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command, err.Error()))
-			return
-		}
-	}
-
-	ip, err := ip.GetHandler().DeleteIP(ipAddr)
+	ip, command, err := ip.GetHandler().DeleteIP(ipAddr)
 	if err != nil {
 		// IP could not be deleted
-		writeErrorResponse(w, http.StatusNotFound, err.Error())
+		writeErrorResponse(w, http.StatusInternalServerError, fmt.Sprintf("cannot exec command %v, err : %v", command, err.Error()))
 		return
 	}
 	writeOKResponse(w, ip)
