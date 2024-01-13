@@ -24,6 +24,7 @@ func validateMiddleware(next http.Handler) http.Handler {
 			if len(bearerToken) == 2 {
 				key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicCertContent))
 				if err != nil {
+					w.WriteHeader(http.StatusUnauthorized)
 					json.NewEncoder(w).Encode(exception{Message: err.Error()})
 					return
 				}
@@ -34,16 +35,22 @@ func validateMiddleware(next http.Handler) http.Handler {
 					return key, nil
 				})
 				if error != nil {
+					w.WriteHeader(http.StatusUnauthorized)
 					json.NewEncoder(w).Encode(exception{Message: error.Error()})
 					return
 				}
 				if token.Valid {
 					next.ServeHTTP(w, req)
 				} else {
+					w.WriteHeader(http.StatusUnauthorized)
 					json.NewEncoder(w).Encode(exception{Message: "Invalid authorization token"})
 				}
+			} else {
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(exception{Message: "Invalid authorization token"})
 			}
 		} else {
+			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(exception{Message: "An authorization header is required"})
 		}
 	})
